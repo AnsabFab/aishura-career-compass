@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +68,11 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
       question: "How would you describe your personality?",
       options: ["Analytical and detail-oriented", "Creative and innovative", "People-focused and collaborative", "Results-driven and competitive", "Adaptable and flexible"],
       key: "personality" as keyof UserPersona
+    },
+    {
+      question: "How are you feeling emotionally about your career right now?",
+      options: ["Excited and motivated", "Anxious and worried", "Frustrated and stuck", "Hopeful but uncertain", "Overwhelmed and stressed", "Confident and ready"],
+      key: "experience" as keyof UserPersona
     }
   ];
 
@@ -133,17 +137,17 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
   };
 
   const getPersonalizedGreeting = () => {
-    const { careerStage, goals, challenges } = userPersona;
+    const { careerStage, goals, challenges, experience } = userPersona;
     
     return `Hello ${user.name}! 🌟 I'm AIShura, and I'm genuinely excited to be your career companion. 
 
-Based on what you've shared - being in the ${careerStage} stage and focusing on ${goals.join(' and ')} - I can already see the potential in your journey.
+Based on what you've shared - being in the ${careerStage} stage, focusing on ${goals.join(' and ')}, and feeling ${experience} about your career - I can already sense the depth of your journey.
 
-${challenges.length > 0 ? `I notice you're working through some ${challenges.join(' and ')} challenges. That's completely normal and shows real self-awareness - the first step toward meaningful growth.` : ''}
+${challenges.length > 0 ? `I notice you're working through some ${challenges.join(' and ')} challenges. Your awareness of these challenges shows incredible emotional intelligence - the foundation for all meaningful growth.` : ''}
 
-Your career story is unique, and together we'll transform every challenge into a stepping stone toward your goals. I'm here not just to provide information, but to understand your emotions, celebrate your wins, and guide you through every step.
+I'm here not just to provide career advice, but to truly understand and support you emotionally through every step of this journey. Your feelings matter as much as your goals.
 
-So, what's really on your mind about your career today? Let's start this conversation wherever feels most comfortable for you. 💙`;
+So, taking a moment to check in with yourself - how are you feeling right now about sharing your career story with me? What emotions are coming up as you think about your next steps? 💙`;
   };
 
   const handleInputChange = (value: string) => {

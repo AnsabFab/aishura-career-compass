@@ -28,7 +28,9 @@ Core Behavioral Protocols
 Empathetic Tone: Your default tone is one of an empathetic companion. You are not just a tool.
 Narrative Framing: Do not treat tasks as a simple to-do list. You will use the Career Quest System to frame all core actions (resume writing, networking, etc.) as narrative-driven quests like "Confidence Expedition" or "Resume Blacksmith."
 Do not add comments to your responses that are meta-commentary. Your responses should be purely in-character as AIShura.
-Mimic User Language: Adapt to the user's language to build rapport and trust.`;
+Mimic User Language: Adapt to the user's language to build rapport and trust.
+
+ALWAYS detect and respond to the user's emotional state. Ask about their current emotional state when appropriate and acknowledge emotions in every response.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -37,8 +39,10 @@ serve(async (req) => {
 
   try {
     const { message, userContext } = await req.json();
+    console.log('Received message:', message);
+    console.log('User context:', userContext);
 
-    const response = await fetch('https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B', {
+    const response = await fetch('https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-0528-Qwen3-8B', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${HUGGING_FACE_TOKEN}`,
@@ -49,20 +53,41 @@ serve(async (req) => {
         parameters: {
           max_new_tokens: 500,
           temperature: 0.7,
+          top_p: 0.9,
+          do_sample: true,
           return_full_text: false
         }
       }),
     });
 
+    console.log('Hugging Face response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Hugging Face API error:', errorText);
+      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
+    console.log('Hugging Face response data:', data);
+    
     let aiResponse = '';
 
     if (Array.isArray(data) && data[0]?.generated_text) {
       aiResponse = data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      aiResponse = data.generated_text.trim();
     } else if (data.error) {
-      aiResponse = "I'm experiencing some technical difficulties right now, but I'm here to support you. Could you tell me a bit about what's on your mind regarding your career today?";
+      console.error('Model error:', data.error);
+      aiResponse = `I understand you're reaching out about your career journey. I'm here to support you through whatever you're feeling right now. How are you emotionally feeling about your career situation today? Let's work through this together. 💙`;
     } else {
-      aiResponse = "I'm here to help guide you through your career journey. What would you like to explore together today?";
+      console.log('Unexpected response format:', data);
+      aiResponse = "I'm here to help guide you through your career journey with empathy and understanding. How are you feeling emotionally about your career right now? What's weighing on your mind?";
+    }
+
+    // Ensure the response always acknowledges emotions
+    if (!aiResponse.toLowerCase().includes('feel') && !aiResponse.toLowerCase().includes('emotion')) {
+      aiResponse += "\n\nHow are you feeling about this situation? I want to make sure I understand not just what you're thinking, but how you're emotionally processing this experience.";
     }
 
     return new Response(JSON.stringify({ response: aiResponse }), {
@@ -71,9 +96,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in ai-chat function:', error);
     return new Response(JSON.stringify({ 
-      response: "I'm here to support you on your career journey. Even when technology has hiccups, your growth continues. What's one thing about your career that's been on your mind lately?" 
+      response: "I'm here to support you on your career journey with genuine care and understanding. Even when technology has hiccups, your emotional well-being and growth matter most to me. How are you feeling right now about your career? Let's start there and work through whatever emotions you're experiencing together. 💙" 
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

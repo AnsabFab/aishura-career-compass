@@ -72,11 +72,9 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-cosmic-500/20 mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-xs text-muted-foreground">
-            Built with ❤️ using cutting-edge AI technology for the future of career development.
+            Cutting-edge AI technology for the future of career development.
           </div>
           <div className="flex gap-4 text-xs text-muted-foreground">
-            <span>Powered by DeepSeek AI</span>
-            <span>•</span>
             <span>Version 1.0.0</span>
           </div>
         </div>
