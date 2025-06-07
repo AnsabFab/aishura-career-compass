@@ -6,6 +6,7 @@ import { QuestSystem } from '@/components/QuestSystem';
 import { Leaderboard } from '@/components/Leaderboard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User, Star, Book, Circle } from 'lucide-react';
 
 interface DashboardProps {

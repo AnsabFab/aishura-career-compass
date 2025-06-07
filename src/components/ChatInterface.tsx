@@ -51,24 +51,24 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
     {
       question: "What stage of your career journey are you in right now?",
       options: ["Just starting out", "Early career (1-3 years)", "Mid-career (3-7 years)", "Senior level (7+ years)", "Career transition"],
-      key: "careerStage"
+      key: "careerStage" as keyof UserPersona
     },
     {
       question: "What are your main career goals? (Select all that apply)",
       options: ["Land a new job", "Get promoted", "Switch careers", "Improve skills", "Build network", "Start own business"],
-      key: "goals",
+      key: "goals" as keyof UserPersona,
       multiple: true
     },
     {
       question: "What challenges are you facing? (Select all that apply)",
       options: ["Lack of experience", "Interview anxiety", "Resume concerns", "Networking difficulties", "Work-life balance", "Imposter syndrome"],
-      key: "challenges",
+      key: "challenges" as keyof UserPersona,
       multiple: true
     },
     {
       question: "How would you describe your personality?",
       options: ["Analytical and detail-oriented", "Creative and innovative", "People-focused and collaborative", "Results-driven and competitive", "Adaptable and flexible"],
-      key: "personality"
+      key: "personality" as keyof UserPersona
     }
   ];
 
@@ -117,10 +117,10 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
     const updatedPersona = { ...userPersona };
     const question = personaQuestions[currentQuestion];
     
-    if (isMultiple) {
-      updatedPersona[question.key as keyof UserPersona] = answer as string[];
-    } else {
-      updatedPersona[question.key as keyof UserPersona] = answer as string;
+    if (isMultiple && Array.isArray(answer)) {
+      (updatedPersona[question.key] as string[]) = answer;
+    } else if (!isMultiple && typeof answer === 'string') {
+      (updatedPersona[question.key] as string) = answer;
     }
     
     setUserPersona(updatedPersona);
