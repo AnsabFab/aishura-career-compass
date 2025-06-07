@@ -4,6 +4,7 @@ import { Hero } from '@/components/Hero';
 import { Dashboard } from '@/components/Dashboard';
 import { AuthModal } from '@/components/AuthModal';
 import { Footer } from '@/components/Footer';
+import { Navbar } from '@/components/Navbar';
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -38,6 +39,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Navigation */}
+      <Navbar 
+        onAuthClick={handleAuthClick}
+        isAuthenticated={isAuthenticated}
+        onLogout={handleLogout}
+      />
+
       {/* Floating Orbs Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="floating-orb w-64 h-64 top-20 left-10 opacity-30" style={{ animationDelay: '0s' }} />
