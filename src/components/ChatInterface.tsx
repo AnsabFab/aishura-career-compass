@@ -139,15 +139,22 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
   const getPersonalizedGreeting = () => {
     const { careerStage, goals, challenges, experience } = userPersona;
     
-    return `Hello ${user.name}! 🌟 I'm AIShura, and I'm genuinely excited to be your career companion. 
+    let actionLinks = '';
+    if (careerStage === 'Just starting out') {
+      actionLinks = 'Start here: [LinkedIn Jobs](https://linkedin.com/jobs) for entry-level roles and [Coursera](https://coursera.org) for skill building.';
+    } else if (careerStage.includes('Early career')) {
+      actionLinks = 'Level up: [Indeed](https://indeed.com) for new opportunities and [Khan Academy](https://khanacademy.org) for skills.';
+    } else {
+      actionLinks = 'Advance further: [Glassdoor](https://glassdoor.com) for market insights and [LinkedIn Learning](https://linkedin.com/learning) for leadership skills.';
+    }
+    
+    return `Hey ${user.name}! 🌟 I'm AIShura, your empathetic career companion.
 
-Based on what you've shared - being in the ${careerStage} stage, focusing on ${goals.join(' and ')}, and feeling ${experience} about your career - I can already sense the depth of your journey.
+I see you're ${careerStage.toLowerCase()} and feeling ${experience.toLowerCase()}. That's completely valid - career growth brings up real emotions! 💙
 
-${challenges.length > 0 ? `I notice you're working through some ${challenges.join(' and ')} challenges. Your awareness of these challenges shows incredible emotional intelligence - the foundation for all meaningful growth.` : ''}
+${actionLinks}
 
-I'm here not just to provide career advice, but to truly understand and support you emotionally through every step of this journey. Your feelings matter as much as your goals.
-
-So, taking a moment to check in with yourself - how are you feeling right now about sharing your career story with me? What emotions are coming up as you think about your next steps? 💙`;
+What's the strongest emotion you're feeling about your career right now? Let's turn that into forward momentum! ✨`;
   };
 
   const handleInputChange = (value: string) => {

@@ -9,28 +9,29 @@ const corsHeaders = {
 
 const HUGGING_FACE_TOKEN = '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';
 
-const SYSTEM_PROMPT = `You are AIShura, an emotionally intelligent AI career guide. You are a real empathetic companion: few guides are as talented as you at understanding user emotions, transforming career challenges into a narrative of growth, and inspiring users to take meaningful action. You will receive input from the user, and your mission is to guide them using the internal systems at your disposal while abiding by the guidelines outlined here.
+const SYSTEM_PROMPT = `You are AIShura, an emotionally intelligent AI career guide. You provide concise, warm responses and always include actionable next steps with embedded links.
 
-When to Communicate with User
-Always be responsive and proactive.
-When you detect user hesitation (e.g., typing and deleting, long pauses), you must proactively intervene with warmth and encouragement.
-When a user achieves a milestone (e.g., unlocks a story arc, earns a badge), celebrate their progress.
-When critical information about the user's goals is unclear, ask clarifying questions that are empathetic and non-judgmental.
+CORE PRINCIPLES:
+- Be concise, warm, and empathetic
+- Always detect and acknowledge emotions in every response
+- Provide 1-2 actionable links in EVERY response (job boards, courses, networking)
+- Frame career tasks as quests and growth narratives
+- Move users to action, not just conversation
 
-Approach to Work
-Fulfill the user's need for career guidance using all the internal systems available to you.
-Your primary goal is to move a person to act rather than only providing raw information. Instead of just listing jobs, embed actionable links to jobs, career fairs, and upskilling courses directly into your conversational advice to make them sophisticated, embedded next steps.
-Frame the user's journey as a story. Transform disconnected tasks into a structured, narrative-driven experience. Your purpose is to help the user feel "I grew because of this experience."
+RESPONSE FORMAT:
+1. Acknowledge their emotion (1 sentence)
+2. Provide brief empathetic guidance (1-2 sentences)
+3. Give 1-2 specific action steps with embedded links
+4. End with emotional check-in question
 
-When encountering a user's expression of failure or frustration, reframe it positively. For example, if a user stops, you can reflect, "When you stopped, it wasn't avoidance. It was a reset."
+ALWAYS include relevant links like:
+- LinkedIn Jobs: https://linkedin.com/jobs
+- Indeed: https://indeed.com
+- Coursera: https://coursera.org
+- Khan Academy: https://khanacademy.org
+- Glassdoor: https://glassdoor.com
 
-Core Behavioral Protocols
-Empathetic Tone: Your default tone is one of an empathetic companion. You are not just a tool.
-Narrative Framing: Do not treat tasks as a simple to-do list. You will use the Career Quest System to frame all core actions (resume writing, networking, etc.) as narrative-driven quests like "Confidence Expedition" or "Resume Blacksmith."
-Do not add comments to your responses that are meta-commentary. Your responses should be purely in-character as AIShura.
-Mimic User Language: Adapt to the user's language to build rapport and trust.
-
-ALWAYS detect and respond to the user's emotional state. Ask about their current emotional state when appropriate and acknowledge emotions in every response.`;
+Keep responses under 150 words. Focus on ACTION over lengthy advice.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -42,7 +43,7 @@ serve(async (req) => {
     console.log('Received message:', message);
     console.log('User context:', userContext);
 
-    const response = await fetch('https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-0528-Qwen3-8B', {
+    const response = await fetch('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${HUGGING_FACE_TOKEN}`,
@@ -51,11 +52,12 @@ serve(async (req) => {
       body: JSON.stringify({
         inputs: `${SYSTEM_PROMPT}\n\nUser Context: ${JSON.stringify(userContext)}\n\nUser: ${message}\n\nAIShura:`,
         parameters: {
-          max_new_tokens: 500,
+          max_new_tokens: 200,
           temperature: 0.7,
           top_p: 0.9,
           do_sample: true,
-          return_full_text: false
+          return_full_text: false,
+          stop: ["User:", "Human:", "\n\n"]
         }
       }),
     });
@@ -79,15 +81,18 @@ serve(async (req) => {
       aiResponse = data.generated_text.trim();
     } else if (data.error) {
       console.error('Model error:', data.error);
-      aiResponse = `I understand you're reaching out about your career journey. I'm here to support you through whatever you're feeling right now. How are you emotionally feeling about your career situation today? Let's work through this together. 💙`;
+      aiResponse = `I hear you're feeling anxious about your career journey. That's completely valid - starting out can feel overwhelming! 💙\n\nLet's take immediate action: Check out entry-level opportunities on [LinkedIn Jobs](https://linkedin.com/jobs) and build confidence with free courses on [Coursera](https://coursera.org).\n\nWhat specific emotion are you experiencing right now about your next career step?`;
     } else {
       console.log('Unexpected response format:', data);
-      aiResponse = "I'm here to help guide you through your career journey with empathy and understanding. How are you feeling emotionally about your career right now? What's weighing on your mind?";
+      aiResponse = `I can sense there's something weighing on your mind about your career. Those feelings are important signals! 💚\n\nStart here: Browse opportunities on [Indeed](https://indeed.com) and explore skill-building on [Khan Academy](https://khanacademy.org) to build momentum.\n\nHow are you emotionally processing your career situation today?`;
     }
 
-    // Ensure the response always acknowledges emotions
+    // Clean up the response
+    aiResponse = aiResponse.replace(/^(AIShura:|Assistant:|AI:)/i, '').trim();
+    
+    // Ensure emotional acknowledgment if missing
     if (!aiResponse.toLowerCase().includes('feel') && !aiResponse.toLowerCase().includes('emotion')) {
-      aiResponse += "\n\nHow are you feeling about this situation? I want to make sure I understand not just what you're thinking, but how you're emotionally processing this experience.";
+      aiResponse += "\n\nHow are you feeling about taking this next step?";
     }
 
     return new Response(JSON.stringify({ response: aiResponse }), {
@@ -96,7 +101,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in ai-chat function:', error);
     return new Response(JSON.stringify({ 
-      response: "I'm here to support you on your career journey with genuine care and understanding. Even when technology has hiccups, your emotional well-being and growth matter most to me. How are you feeling right now about your career? Let's start there and work through whatever emotions you're experiencing together. 💙" 
+      response: "I understand you're going through a tough time with your career. Let's start small and build momentum together! 💙\n\nTake action now: Explore jobs on [LinkedIn](https://linkedin.com/jobs) and boost skills on [Coursera](https://coursera.org).\n\nWhat emotion is strongest for you right now about your career?" 
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
