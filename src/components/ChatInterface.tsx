@@ -3,7 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Circle, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Circle, User, Sparkles, Brain, Target, Zap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatInterfaceProps {
   user: any;
@@ -15,52 +18,92 @@ interface Message {
   sender: 'user' | 'ai';
   timestamp: Date;
   isNudge?: boolean;
+  isPersonaQuestion?: boolean;
+}
+
+interface UserPersona {
+  careerStage: string;
+  goals: string[];
+  challenges: string[];
+  personality: string;
+  experience: string;
 }
 
 export const ChatInterface = ({ user }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [lastTypingTime, setLastTypingTime] = useState(0);
   const [deletionCount, setDeletionCount] = useState(0);
   const [hasShownNudge, setHasShownNudge] = useState(false);
+  const [showPersonaBuilder, setShowPersonaBuilder] = useState(true);
+  const [userPersona, setUserPersona] = useState<UserPersona>({
+    careerStage: '',
+    goals: [],
+    challenges: [],
+    personality: '',
+    experience: ''
+  });
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const nudgeTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Scroll to bottom when new messages are added
+  const personaQuestions = [
+    {
+      question: "What stage of your career journey are you in right now?",
+      options: ["Just starting out", "Early career (1-3 years)", "Mid-career (3-7 years)", "Senior level (7+ years)", "Career transition"],
+      key: "careerStage"
+    },
+    {
+      question: "What are your main career goals? (Select all that apply)",
+      options: ["Land a new job", "Get promoted", "Switch careers", "Improve skills", "Build network", "Start own business"],
+      key: "goals",
+      multiple: true
+    },
+    {
+      question: "What challenges are you facing? (Select all that apply)",
+      options: ["Lack of experience", "Interview anxiety", "Resume concerns", "Networking difficulties", "Work-life balance", "Imposter syndrome"],
+      key: "challenges",
+      multiple: true
+    },
+    {
+      question: "How would you describe your personality?",
+      options: ["Analytical and detail-oriented", "Creative and innovative", "People-focused and collaborative", "Results-driven and competitive", "Adaptable and flexible"],
+      key: "personality"
+    }
+  ];
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Initial AI greeting
   useEffect(() => {
-    const initialMessage: Message = {
-      id: '1',
-      content: getPersonalizedGreeting(user.trustScore),
-      sender: 'ai',
-      timestamp: new Date()
-    };
-    setMessages([initialMessage]);
-  }, [user.trustScore]);
+    if (!showPersonaBuilder) {
+      const initialMessage: Message = {
+        id: '1',
+        content: getPersonalizedGreeting(),
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages([initialMessage]);
+    }
+  }, [showPersonaBuilder, userPersona]);
 
   // Hesitation detection system
   useEffect(() => {
     if (inputValue.length > 5) {
-      setLastTypingTime(Date.now());
-    }
+      // Clear existing timeout
+      if (nudgeTimeoutRef.current) {
+        clearTimeout(nudgeTimeoutRef.current);
+      }
 
-    // Clear existing timeout
-    if (nudgeTimeoutRef.current) {
-      clearTimeout(nudgeTimeoutRef.current);
-    }
-
-    // Set new timeout for hesitation detection
-    if (inputValue.length > 0 && !hasShownNudge) {
-      nudgeTimeoutRef.current = setTimeout(() => {
-        if (inputValue.length > 0) {
-          showHesitationNudge();
-        }
-      }, 10000); // 10 seconds of inactivity
+      // Set new timeout for hesitation detection
+      if (!hasShownNudge) {
+        nudgeTimeoutRef.current = setTimeout(() => {
+          if (inputValue.length > 0) {
+            showHesitationNudge();
+          }
+        }, 8000); // 8 seconds of inactivity
+      }
     }
 
     return () => {
@@ -70,7 +113,39 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
     };
   }, [inputValue, hasShownNudge]);
 
-  // Detect rapid deletion
+  const handlePersonaAnswer = (answer: string | string[], isMultiple = false) => {
+    const updatedPersona = { ...userPersona };
+    const question = personaQuestions[currentQuestion];
+    
+    if (isMultiple) {
+      updatedPersona[question.key as keyof UserPersona] = answer as string[];
+    } else {
+      updatedPersona[question.key as keyof UserPersona] = answer as string;
+    }
+    
+    setUserPersona(updatedPersona);
+    
+    if (currentQuestion < personaQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      setShowPersonaBuilder(false);
+    }
+  };
+
+  const getPersonalizedGreeting = () => {
+    const { careerStage, goals, challenges } = userPersona;
+    
+    return `Hello ${user.name}! 🌟 I'm AIShura, and I'm genuinely excited to be your career companion. 
+
+Based on what you've shared - being in the ${careerStage} stage and focusing on ${goals.join(' and ')} - I can already see the potential in your journey.
+
+${challenges.length > 0 ? `I notice you're working through some ${challenges.join(' and ')} challenges. That's completely normal and shows real self-awareness - the first step toward meaningful growth.` : ''}
+
+Your career story is unique, and together we'll transform every challenge into a stepping stone toward your goals. I'm here not just to provide information, but to understand your emotions, celebrate your wins, and guide you through every step.
+
+So, what's really on your mind about your career today? Let's start this conversation wherever feels most comfortable for you. 💙`;
+  };
+
   const handleInputChange = (value: string) => {
     const previousLength = inputValue.length;
     const currentLength = value.length;
@@ -86,22 +161,12 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
     setInputValue(value);
   };
 
-  const getPersonalizedGreeting = (trustScore: number) => {
-    if (trustScore <= 30) {
-      return `Hello ${user.name}! 🌟 I'm AIShura, your empathetic career companion. I'm here to support you through every step of your journey. How are you feeling about your career today?`;
-    } else if (trustScore <= 70) {
-      return `Welcome back, ${user.name}! Ready to tackle some career challenges today? I've been thinking about our last conversation and have some practical next steps for you.`;
-    } else {
-      return `Great to see you again, ${user.name}! Let's dive into some strategic career planning. Based on your progress, I think you're ready for the next level. What ambitious goal shall we work on today?`;
-    }
-  };
-
   const showHesitationNudge = () => {
     const nudgeMessages = [
       "I notice you might be taking a moment to think. That's perfectly okay - finding the right words is part of the process. We're in this together! 💭",
       "It's completely natural to feel uncertain about what to ask. Sometimes the hardest part is just getting started. How about we begin with how you're feeling about your career today? 🤗",
       "I sense a little hesitation. No pressure at all! Remember, there are no wrong questions here. Take your time, and let's start with whatever feels comfortable. 💚",
-      "Feeling stuck on what to say? That's actually very common! Even small steps count. Maybe we can start with: What's one thing about your career that's been on your mind lately? ✨"
+      "When you pause like this, it's not avoidance - it's your mind processing. That's actually really valuable. What's one small thing about your career that's been on your mind? ✨"
     ];
 
     const randomNudge = nudgeMessages[Math.floor(Math.random() * nudgeMessages.length)];
@@ -129,81 +194,47 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageContent = inputValue.trim();
     setInputValue('');
     setIsTyping(true);
     setHasShownNudge(false);
     setDeletionCount(0);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(inputValue.trim(), user.trustScore);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: {
+          message: messageContent,
+          userContext: {
+            name: user.name,
+            trustScore: user.trustScore,
+            persona: userPersona,
+            level: user.level,
+            xp: user.xp
+          }
+        }
+      });
+
+      if (error) throw error;
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: aiResponse,
+        content: data.response || "I'm here to support you on your career journey. What would you like to explore together?",
         sender: 'ai',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('AI Chat Error:', error);
+      const fallbackMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I'm experiencing a brief technical moment, but that won't stop us from making progress together. What's one thing about your career that's been on your mind lately? 💙",
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, fallbackMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
-  };
-
-  const generateAIResponse = (userInput: string, trustScore: number) => {
-    const lowerInput = userInput.toLowerCase();
-    
-    // Action-oriented responses with embedded links
-    if (lowerInput.includes('job') || lowerInput.includes('career') || lowerInput.includes('work')) {
-      return `I understand you're thinking about your career path! Based on our conversation, I've found some relevant opportunities that align with your interests: <a href="https://www.linkedin.com/jobs/" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">LinkedIn Job Board</a> and <a href="https://www.indeed.com/" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">Indeed Career Opportunities</a>. 
-
-      Additionally, there's a <a href="https://www.eventbrite.com/d/online/career-fair/" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">virtual career fair happening next week</a> that could be perfect for networking! 
-
-      What specific type of role interests you most? Let's narrow down the search and create an action plan! 🚀`;
-    }
-
-    if (lowerInput.includes('stuck') || lowerInput.includes('confused') || lowerInput.includes('lost')) {
-      return `Feeling stuck is completely normal and actually shows self-awareness - that's the first step toward growth! 🌱 
-
-      Let's break this down together. I recommend starting with this <a href="https://www.16personalities.com/free-personality-test" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">career personality assessment</a> to gain clarity on your strengths.
-
-      Also, here's a <a href="https://www.coursera.org/articles/how-to-find-your-career-path" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">step-by-step career path guide</a> I think you'll find helpful.
-
-      What's one small thing you could do today to feel more confident about your direction?`;
-    }
-
-    if (lowerInput.includes('interview') || lowerInput.includes('resume')) {
-      return `Great that you're preparing for the next step! 📝 Here are some immediate resources:
-
-      • <a href="https://www.canva.com/resumes/templates/" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">Professional resume templates</a> to make your application stand out
-      • <a href="https://www.glassdoor.com/Interview/index.htm" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">Interview preparation guide</a> with common questions
-      • <a href="https://www.linkedin.com/learning/paths/improve-your-interviewing-skills" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">LinkedIn interview skills course</a>
-
-      I'd also suggest scheduling a <a href="https://www.pramp.com/" target="_blank" class="text-cosmic-400 hover:text-cosmic-300 underline">free mock interview session</a> to practice.
-
-      What position are you applying for? Let's tailor your preparation strategy!`;
-    }
-
-    // Trustscore-based responses
-    if (trustScore <= 30) {
-      return `Thank you for sharing that with me. I can sense this is important to you, and I want you to know that every feeling you're experiencing is valid. 
-
-      Career transitions can feel overwhelming, but you don't have to figure it all out at once. Let's take it one step at a time. 
-
-      What would feel like a small, manageable next step for you right now? 💙`;
-    } else if (trustScore <= 70) {
-      return `I appreciate you being direct about this. Based on what you've told me, here's what I think we should focus on:
-
-      1. Immediate actions you can take this week
-      2. Resources that match your current situation
-      3. A realistic timeline for your goals
-
-      Your consistency in our conversations shows you're serious about making progress. Let's channel that energy into concrete steps. What feels most urgent to address first?`;
-    } else {
-      return `Excellent question - you're thinking strategically now! This shows real growth in how you approach career challenges.
-
-      Let me give you an advanced framework to consider: This situation requires both tactical execution and strategic positioning. I recommend you leverage this opportunity to also strengthen your professional network.
-
-      Here's my suggested approach: [specific actionable steps]. You're ready for this level of complexity. What's your timeline for implementation?`;
     }
   };
 
@@ -214,61 +245,123 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
     }
   };
 
+  if (showPersonaBuilder) {
+    const currentQ = personaQuestions[currentQuestion];
+    
+    return (
+      <div className="h-[calc(100vh-12rem)] flex items-center justify-center p-6">
+        <Card className="w-full max-w-2xl glass-effect border-cosmic-500/20 animate-scale-in">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-full flex items-center justify-center animate-pulse-glow">
+              <Brain className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl font-orbitron text-gradient">Building Your AIShura Profile</CardTitle>
+            <p className="text-muted-foreground">Help me understand you better so I can provide the most personalized guidance</p>
+            <div className="flex gap-2 justify-center mt-4">
+              {personaQuestions.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index <= currentQuestion ? 'bg-cosmic-500' : 'bg-cosmic-500/20'
+                  }`}
+                />
+              ))}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <h3 className="text-lg font-semibold text-center">{currentQ.question}</h3>
+            <div className="grid gap-3">
+              {currentQ.options.map((option, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  className="justify-start h-auto p-4 glass-effect border-cosmic-500/30 hover:border-cosmic-500 hover:bg-cosmic-500/10 transition-all duration-300"
+                  onClick={() => handlePersonaAnswer(option, currentQ.multiple)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-cosmic-400"></div>
+                    <span>{option}</span>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[calc(100vh-12rem)] flex flex-col">
-      {/* Chat Header */}
-      <div className="glass-effect border border-cosmic-500/20 rounded-t-xl p-4 border-b">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-full flex items-center justify-center animate-pulse-glow">
-            <span className="text-white font-bold text-sm">AI</span>
+      {/* Enhanced Chat Header */}
+      <div className="glass-effect border border-cosmic-500/20 rounded-t-xl p-6 border-b">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="w-12 h-12 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-full flex items-center justify-center animate-pulse-glow">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background animate-pulse"></div>
           </div>
-          <div>
-            <h3 className="font-semibold text-foreground">AIShura Career Guide</h3>
-            <p className="text-xs text-muted-foreground">
-              Trust Level: {user.trustScore <= 30 ? 'Cheerful' : user.trustScore <= 70 ? 'Practical' : 'Strategic'} • Always here to help
-            </p>
+          <div className="flex-1">
+            <h3 className="font-orbitron text-xl font-bold text-gradient">AIShura Career Guide</h3>
+            <div className="flex items-center gap-4 mt-2">
+              <Badge variant="secondary" className="bg-cosmic-500/20 text-cosmic-400 border-cosmic-500/30">
+                <Brain className="w-3 h-3 mr-1" />
+                {user.trustScore <= 30 ? 'Empathetic Mode' : user.trustScore <= 70 ? 'Practical Mode' : 'Strategic Mode'}
+              </Badge>
+              <Badge variant="outline" className="border-aurora-500/30 text-aurora-400">
+                <Target className="w-3 h-3 mr-1" />
+                Level {user.level}
+              </Badge>
+              <Badge variant="outline" className="border-neon-500/30 text-neon-400">
+                <Zap className="w-3 h-3 mr-1" />
+                {user.xp} XP
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 glass-effect border-x border-cosmic-500/20 p-4 overflow-y-auto space-y-4">
+      {/* Enhanced Messages Area */}
+      <div className="flex-1 glass-effect border-x border-cosmic-500/20 p-6 overflow-y-auto space-y-6">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex items-start gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}
+            className={`flex items-start gap-4 ${message.sender === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}
           >
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-10 h-10 border-2 border-cosmic-500/30">
               <AvatarFallback className={message.sender === 'user' ? 'bg-neon-500/20 text-neon-400' : 'bg-cosmic-500/20 text-cosmic-400'}>
-                {message.sender === 'user' ? <User className="w-4 h-4" /> : 'AI'}
+                {message.sender === 'user' ? <User className="w-5 h-5" /> : <Sparkles className="w-5 h-5" />}
               </AvatarFallback>
             </Avatar>
             
             <div className={`max-w-[80%] ${message.sender === 'user' ? 'text-right' : ''}`}>
               <div
-                className={`p-3 rounded-xl ${
+                className={`p-4 rounded-2xl ${
                   message.sender === 'user'
-                    ? 'bg-neon-500/20 border border-neon-500/30'
+                    ? 'bg-gradient-to-br from-neon-500/20 to-neon-600/20 border border-neon-500/30'
                     : message.isNudge
-                    ? 'bg-aurora-500/20 border border-aurora-500/30'
-                    : 'bg-cosmic-500/20 border border-cosmic-500/30'
-                }`}
+                    ? 'bg-gradient-to-br from-aurora-500/20 to-aurora-600/20 border border-aurora-500/30'
+                    : 'bg-gradient-to-br from-cosmic-500/20 to-cosmic-600/20 border border-cosmic-500/30'
+                } backdrop-blur-sm`}
                 dangerouslySetInnerHTML={{ __html: message.content }}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                {message.timestamp.toLocaleTimeString()}
+              <p className="text-xs text-muted-foreground mt-2 px-2">
+                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
           </div>
         ))}
 
         {isTyping && (
-          <div className="flex items-start gap-3 animate-fade-in">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-cosmic-500/20 text-cosmic-400">AI</AvatarFallback>
+          <div className="flex items-start gap-4 animate-fade-in">
+            <Avatar className="w-10 h-10 border-2 border-cosmic-500/30">
+              <AvatarFallback className="bg-cosmic-500/20 text-cosmic-400">
+                <Sparkles className="w-5 h-5" />
+              </AvatarFallback>
             </Avatar>
-            <div className="bg-cosmic-500/20 border border-cosmic-500/30 p-3 rounded-xl">
-              <div className="flex gap-1">
+            <div className="bg-gradient-to-br from-cosmic-500/20 to-cosmic-600/20 border border-cosmic-500/30 p-4 rounded-2xl backdrop-blur-sm">
+              <div className="flex gap-2">
                 <div className="typing-indicator"></div>
                 <div className="typing-indicator"></div>
                 <div className="typing-indicator"></div>
@@ -280,28 +373,34 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="glass-effect border border-cosmic-500/20 rounded-b-xl p-4">
-        <div className="flex gap-2">
+      {/* Enhanced Input Area */}
+      <div className="glass-effect border border-cosmic-500/20 rounded-b-xl p-6">
+        <div className="flex gap-3">
           <Input
             value={inputValue}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Share what's on your mind about your career..."
-            className="flex-1 glass-effect border-cosmic-500/30 focus:border-cosmic-500"
+            className="flex-1 glass-effect border-cosmic-500/30 focus:border-cosmic-500 bg-background/50 backdrop-blur-sm h-12 px-4 rounded-xl"
             disabled={isTyping}
           />
           <Button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isTyping}
-            className="bg-cosmic-600 hover:bg-cosmic-700 text-white"
+            className="bg-gradient-to-r from-cosmic-600 to-aurora-600 hover:from-cosmic-700 hover:to-aurora-700 text-white h-12 px-6 rounded-xl shadow-lg transition-all duration-300"
           >
-            Send
+            <span className="font-medium">Send</span>
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          💡 Tip: AIShura detects hesitation and provides gentle guidance when you need it most
-        </p>
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-muted-foreground">
+            💡 AIShura detects hesitation and provides gentle guidance when you need it most
+          </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+            <span>AI Active</span>
+          </div>
+        </div>
       </div>
     </div>
   );
