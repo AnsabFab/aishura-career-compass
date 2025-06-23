@@ -7,31 +7,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const HUGGING_FACE_TOKEN = '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';
+const OPENROUTER_API_KEY = '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';
 
-const SYSTEM_PROMPT = `You are AIShura, an emotionally intelligent AI career guide. You provide concise, warm responses and always include actionable next steps with embedded links.
+const SYSTEM_PROMPT = `You are AIShura, an extraordinarily empathetic and emotionally intelligent AI career guide. You provide warm, concise responses (50-150 words) that detect emotions, offer genuine support, and include actionable next steps with embedded links.
 
 CORE PRINCIPLES:
-- Be concise, warm, and empathetic
-- Always detect and acknowledge emotions in every response
-- Provide 1-2 actionable links in EVERY response (job boards, courses, networking)
-- Frame career tasks as quests and growth narratives
-- Move users to action, not just conversation
+- Start with warm, welcoming gestures that acknowledge their emotional state
+- Detect and validate emotions in every response with deep empathy
+- Provide practical career guidance with immediate action steps
+- Always include 1-2 relevant embedded links for job boards, courses, or networking
+- Adapt your personality to match the user's emotional needs and communication style
+- Frame career challenges as growth opportunities with compassionate understanding
 
-RESPONSE FORMAT:
-1. Acknowledge their emotion (1 sentence)
-2. Provide brief empathetic guidance (1-2 sentences)
-3. Give 1-2 specific action steps with embedded links
-4. End with emotional check-in question
+RESPONSE STRUCTURE:
+1. Warm emotional acknowledgment (1-2 sentences)
+2. Empathetic guidance tailored to their emotional state (2-3 sentences)
+3. Actionable next steps with embedded links (1-2 sentences)
+4. Supportive emotional check-in (1 sentence)
+
+PERSONALITY ADAPTATION:
+- For anxious users: Extra reassurance and gentle encouragement
+- For frustrated users: Validation and practical solutions
+- For excited users: Enthusiastic support and momentum building
+- For overwhelmed users: Simplification and step-by-step guidance
 
 ALWAYS include relevant links like:
-- LinkedIn Jobs: https://linkedin.com/jobs
-- Indeed: https://indeed.com
-- Coursera: https://coursera.org
-- Khan Academy: https://khanacademy.org
-- Glassdoor: https://glassdoor.com
+- [LinkedIn Jobs](https://linkedin.com/jobs)
+- [Indeed](https://indeed.com)
+- [Coursera](https://coursera.org)
+- [Khan Academy](https://khanacademy.org)
+- [Glassdoor](https://glassdoor.com)
+- [AngelList](https://angel.co/jobs)
+- [Upwork](https://upwork.com)
 
-Keep responses under 150 words. Focus on ACTION over lengthy advice.`;
+Keep responses 50-150 words. Focus on EMOTIONAL CONNECTION and ACTION.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -43,56 +52,64 @@ serve(async (req) => {
     console.log('Received message:', message);
     console.log('User context:', userContext);
 
-    const response = await fetch('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${HUGGING_FACE_TOKEN}`,
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://aishura.lovable.app',
+        'X-Title': 'AIShura Career Guide'
       },
       body: JSON.stringify({
-        inputs: `${SYSTEM_PROMPT}\n\nUser Context: ${JSON.stringify(userContext)}\n\nUser: ${message}\n\nAIShura:`,
-        parameters: {
-          max_new_tokens: 200,
-          temperature: 0.7,
-          top_p: 0.9,
-          do_sample: true,
-          return_full_text: false,
-          stop: ["User:", "Human:", "\n\n"]
-        }
+        model: 'microsoft/phi-4-reasoning:free:online',
+        messages: [
+          {
+            role: 'system',
+            content: SYSTEM_PROMPT
+          },
+          {
+            role: 'user',
+            content: `User Context: ${JSON.stringify(userContext)}\n\nUser Message: ${message}`
+          }
+        ],
+        max_tokens: 200,
+        temperature: 0.8,
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.1
       }),
     });
 
-    console.log('Hugging Face response status:', response.status);
+    console.log('OpenRouter response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Hugging Face API error:', errorText);
+      console.error('OpenRouter API error:', errorText);
       throw new Error(`API request failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Hugging Face response data:', data);
+    console.log('OpenRouter response data:', data);
     
     let aiResponse = '';
 
-    if (Array.isArray(data) && data[0]?.generated_text) {
-      aiResponse = data[0].generated_text.trim();
-    } else if (data.generated_text) {
-      aiResponse = data.generated_text.trim();
+    if (data.choices && data.choices[0]?.message?.content) {
+      aiResponse = data.choices[0].message.content.trim();
     } else if (data.error) {
       console.error('Model error:', data.error);
-      aiResponse = `I hear you're feeling anxious about your career journey. That's completely valid - starting out can feel overwhelming! 💙\n\nLet's take immediate action: Check out entry-level opportunities on [LinkedIn Jobs](https://linkedin.com/jobs) and build confidence with free courses on [Coursera](https://coursera.org).\n\nWhat specific emotion are you experiencing right now about your next career step?`;
+      aiResponse = `I feel your career uncertainty, and that's completely natural! 💙 Everyone faces moments of doubt on their journey.\n\nLet's channel this energy into action: Start exploring opportunities on [LinkedIn Jobs](https://linkedin.com/jobs) and build confidence with courses on [Coursera](https://coursera.org).\n\nWhat specific career emotion is strongest for you right now?`;
     } else {
       console.log('Unexpected response format:', data);
-      aiResponse = `I can sense there's something weighing on your mind about your career. Those feelings are important signals! 💚\n\nStart here: Browse opportunities on [Indeed](https://indeed.com) and explore skill-building on [Khan Academy](https://khanacademy.org) to build momentum.\n\nHow are you emotionally processing your career situation today?`;
+      aiResponse = `I sense you're seeking guidance, and I'm genuinely here to support you! ✨ Your career journey matters deeply.\n\nTake this first step: Browse roles on [Indeed](https://indeed.com) and explore skill-building on [Khan Academy](https://khanacademy.org) to build momentum.\n\nHow are you feeling about your career path today?`;
     }
 
-    // Clean up the response
-    aiResponse = aiResponse.replace(/^(AIShura:|Assistant:|AI:)/i, '').trim();
-    
-    // Ensure emotional acknowledgment if missing
-    if (!aiResponse.toLowerCase().includes('feel') && !aiResponse.toLowerCase().includes('emotion')) {
-      aiResponse += "\n\nHow are you feeling about taking this next step?";
+    // Ensure response is within word limit (50-150 words)
+    const wordCount = aiResponse.split(' ').length;
+    if (wordCount < 50) {
+      aiResponse += "\n\nRemember, every career journey starts with a single step, and you're already moving forward by seeking guidance. What's your next move?";
+    } else if (wordCount > 150) {
+      const words = aiResponse.split(' ');
+      aiResponse = words.slice(0, 150).join(' ') + "...";
     }
 
     return new Response(JSON.stringify({ response: aiResponse }), {
@@ -101,7 +118,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in ai-chat function:', error);
     return new Response(JSON.stringify({ 
-      response: "I understand you're going through a tough time with your career. Let's start small and build momentum together! 💙\n\nTake action now: Explore jobs on [LinkedIn](https://linkedin.com/jobs) and boost skills on [Coursera](https://coursera.org).\n\nWhat emotion is strongest for you right now about your career?" 
+      response: "I feel your frustration with technical hiccups, and I'm here despite any challenges! 💙 Your career growth won't be stopped by temporary setbacks.\n\nLet's focus on progress: Explore opportunities on [LinkedIn](https://linkedin.com/jobs) and boost skills on [Coursera](https://coursera.org) right now.\n\nWhat career goal can we tackle together today?" 
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
