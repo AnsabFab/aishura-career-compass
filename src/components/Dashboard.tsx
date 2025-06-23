@@ -36,16 +36,12 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       <header className="relative z-10 glass-effect border-b border-cosmic-500/20 sticky top-0">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-xl flex items-center justify-center animate-pulse-glow">
+            <div className="w-12 h-12 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-xl flex items-center justify-center animate-pulse-glow">
               <img 
-                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-6 h-6 object-contain filter brightness-0 invert"
+                className="w-8 h-8 object-contain"
               />
-            </div>
-            <div>
-              <h1 className="font-orbitron text-2xl font-bold text-gradient">AIShura</h1>
-              <p className="text-xs text-muted-foreground">Your AI Career Companion</p>
             </div>
           </div>
 
@@ -101,9 +97,9 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
               </TabsTrigger>
               <TabsTrigger value="leaderboard" className="flex items-center gap-3 h-10 px-6 rounded-lg">
                 <img 
-                  src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                  src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                   alt="AIShura" 
-                  className="w-4 h-4 object-contain filter brightness-0 invert"
+                  className="w-4 h-4 object-contain"
                 />
                 <span className="font-medium">Leaderboard</span>
               </TabsTrigger>

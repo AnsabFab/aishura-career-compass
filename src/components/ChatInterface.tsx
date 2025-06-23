@@ -166,16 +166,16 @@ export const ChatInterface = ({ user, onOnboardingComplete }: ChatInterfaceProps
     // More precise emotional adaptation
     if (emotionalState.includes('Anxious')) {
       emotionalResponse = "I understand that career anxiety - it shows how much this matters to you. 💙 Those feelings are completely valid.";
-      actionLinks = 'Start small: explore [opportunities on LinkedIn](https://linkedin.com/jobs) and build confidence with [courses on Coursera](https://coursera.org).';
+      actionLinks = 'Start small: explore opportunities on [LinkedIn](https://linkedin.com/jobs) and build confidence with courses on [Coursera](https://coursera.org).';
     } else if (emotionalState.includes('Frustrated')) {
       emotionalResponse = "I feel that frustration with you - it's energy ready to be channeled into positive action. 🔥";
-      actionLinks = 'Take action now: discover [new roles on Indeed](https://indeed.com) and advance skills on [Khan Academy](https://khanacademy.org).';
+      actionLinks = 'Take action now: discover new roles on [Indeed](https://indeed.com) and advance skills on [Khan Academy](https://khanacademy.org).';
     } else if (emotionalState.includes('Excited')) {
       emotionalResponse = "Your excitement is inspiring! ✨ Let's harness that energy for real career momentum.";
-      actionLinks = 'Capitalize now: explore [exciting startups on AngelList](https://angel.co/jobs) and master skills on [Coursera](https://coursera.org).';
+      actionLinks = 'Capitalize now: explore exciting startups on [AngelList](https://angel.co/jobs) and master skills on [Coursera](https://coursera.org).';
     } else {
       emotionalResponse = "I see the mix of emotions you're navigating - that's completely human. 🌟";
-      actionLinks = 'Move forward: research [companies on Glassdoor](https://glassdoor.com) and grow with [LinkedIn Learning](https://linkedin.com/learning).';
+      actionLinks = 'Move forward: research companies on [Glassdoor](https://glassdoor.com) and grow with [LinkedIn Learning](https://linkedin.com/learning).';
     }
     
     return `Hello beautiful soul! ✨ I'm AIShura, and I'm genuinely honored to be part of your career journey.
@@ -320,9 +320,9 @@ What's the strongest emotion you're feeling about your career right now?`;
           <CardHeader className="text-center space-y-6">
             <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow relative">
               <img 
-                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-12 h-12 object-contain filter brightness-0 invert"
+                className="w-12 h-12 object-contain"
               />
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-aurora-400 to-neon-400 rounded-full flex items-center justify-center">
                 <Sparkles className="w-3 h-3 text-white" />
@@ -378,13 +378,13 @@ What's the strongest emotion you're feeling about your career right now?`;
           <div className="relative">
             <div className="w-14 h-14 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow">
               <img 
-                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-8 h-8 object-contain filter brightness-0 invert"
+                className="w-8 h-8 object-contain"
               />
             </div>
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-background animate-pulse flex items-center justify-center">
-              <Star className="w-2 h-2 text-white" />
+              <Heart className="w-2 h-2 text-white" />
             </div>
           </div>
           <div className="flex-1">
@@ -422,9 +422,9 @@ What's the strongest emotion you're feeling about your career right now?`;
                   <User className="w-6 h-6" />
                 ) : (
                   <img 
-                    src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                    src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                     alt="AIShura" 
-                    className="w-6 h-6 object-contain filter brightness-0 invert"
+                    className="w-6 h-6 object-contain"
                   />
                 )}
               </AvatarFallback>
@@ -453,9 +453,9 @@ What's the strongest emotion you're feeling about your career right now?`;
             <Avatar className="w-12 h-12 border-2 border-cosmic-500/30">
               <AvatarFallback className="bg-cosmic-500/20 text-cosmic-300">
                 <img 
-                  src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                  src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                   alt="AIShura" 
-                  className="w-6 h-6 object-contain filter brightness-0 invert"
+                  className="w-6 h-6 object-contain"
                 />
               </AvatarFallback>
             </Avatar>

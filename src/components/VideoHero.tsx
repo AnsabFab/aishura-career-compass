@@ -74,20 +74,17 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
           Powered by Advanced AI
         </Badge>
 
-        {/* Main Heading with Logo */}
+        {/* Main Logo */}
         <div className="mb-8 animate-scale-in">
           <div className="flex items-center justify-center gap-6 mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow">
+            <div className="w-32 h-32 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow shadow-2xl">
               <img 
-                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-12 h-12 object-contain filter brightness-0 invert"
+                className="w-20 h-20 object-contain"
               />
             </div>
           </div>
-          <h1 className="font-orbitron text-5xl md:text-8xl font-bold text-gradient mb-6">
-            AI<span className="text-aurora-400">Shura</span>
-          </h1>
           <div className="h-2 w-48 mx-auto bg-gradient-to-r from-cosmic-500 via-aurora-500 to-neon-500 rounded-full mb-8" />
         </div>
 
