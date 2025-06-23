@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ChatInterfaceProps {
   user: any;
+  onOnboardingComplete?: () => void;
 }
 
 interface Message {
@@ -28,7 +29,7 @@ interface UserPersona {
   emotionalState: string;
 }
 
-export const ChatInterface = ({ user }: ChatInterfaceProps) => {
+export const ChatInterface = ({ user, onOnboardingComplete }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -85,6 +86,12 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (!showPersonaBuilder && onOnboardingComplete) {
+      onOnboardingComplete();
+    }
+  }, [showPersonaBuilder, onOnboardingComplete]);
 
   useEffect(() => {
     if (!showPersonaBuilder) {
@@ -171,13 +178,13 @@ export const ChatInterface = ({ user }: ChatInterfaceProps) => {
       actionLinks = 'Move forward: research [companies on Glassdoor](https://glassdoor.com) and grow with [LinkedIn Learning](https://linkedin.com/learning).';
     }
     
-    return `Hello! I'm AIShura, your career companion. ✨
+    return `Hello beautiful soul! ✨ I'm AIShura, and I'm genuinely honored to be part of your career journey.
 
 ${emotionalResponse}
 
 ${actionLinks}
 
-What's the strongest emotion driving your career decisions right now?`;
+What's the strongest emotion you're feeling about your career right now?`;
   };
 
   const handleInputChange = (value: string) => {
@@ -313,7 +320,7 @@ What's the strongest emotion driving your career decisions right now?`;
           <CardHeader className="text-center space-y-6">
             <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow relative">
               <img 
-                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
+                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
                 alt="AIShura Logo" 
                 className="w-12 h-12 object-contain filter brightness-0 invert"
               />
@@ -371,7 +378,7 @@ What's the strongest emotion driving your career decisions right now?`;
           <div className="relative">
             <div className="w-14 h-14 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow">
               <img 
-                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
+                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
                 alt="AIShura Logo" 
                 className="w-8 h-8 object-contain filter brightness-0 invert"
               />
@@ -415,7 +422,7 @@ What's the strongest emotion driving your career decisions right now?`;
                   <User className="w-6 h-6" />
                 ) : (
                   <img 
-                    src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
+                    src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
                     alt="AIShura" 
                     className="w-6 h-6 object-contain filter brightness-0 invert"
                   />
@@ -446,7 +453,7 @@ What's the strongest emotion driving your career decisions right now?`;
             <Avatar className="w-12 h-12 border-2 border-cosmic-500/30">
               <AvatarFallback className="bg-cosmic-500/20 text-cosmic-300">
                 <img 
-                  src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
+                  src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
                   alt="AIShura" 
                   className="w-6 h-6 object-contain filter brightness-0 invert"
                 />

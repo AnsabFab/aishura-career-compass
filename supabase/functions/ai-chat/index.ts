@@ -59,7 +59,7 @@ serve(async (req) => {
         'X-Title': 'AIShura Career Guide'
       },
       body: JSON.stringify({
-        model: 'microsoft/phi-4-reasoning:free:online',
+        model: 'deepseek/deepseek-r1-0528-qwen3-8b:free',
         messages: [
           {
             role: 'system',

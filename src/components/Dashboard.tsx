@@ -7,7 +7,7 @@ import { Leaderboard } from '@/components/Leaderboard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Star, Book, Circle } from 'lucide-react';
+import { User, Book, Circle } from 'lucide-react';
 
 interface DashboardProps {
   user: any;
@@ -16,6 +16,11 @@ interface DashboardProps {
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [activeTab, setActiveTab] = useState('chat');
+  const [showOnboarding, setShowOnboarding] = useState(true);
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -32,7 +37,11 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-xl flex items-center justify-center animate-pulse-glow">
-              <Star className="w-5 h-5 text-white" />
+              <img 
+                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                alt="AIShura Logo" 
+                className="w-6 h-6 object-contain filter brightness-0 invert"
+              />
             </div>
             <div>
               <h1 className="font-orbitron text-2xl font-bold text-gradient">AIShura</h1>
@@ -72,42 +81,51 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14">
-            <TabsTrigger value="chat" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-              <Circle className="w-4 h-4" />
-              <span className="font-medium">AI Guide</span>
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-              <User className="w-4 h-4" />
-              <span className="font-medium">Progress</span>
-            </TabsTrigger>
-            <TabsTrigger value="quests" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-              <Book className="w-4 h-4" />
-              <span className="font-medium">Quests</span>
-            </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-              <Star className="w-4 h-4" />
-              <span className="font-medium">Leaderboard</span>
-            </TabsTrigger>
-          </TabsList>
+        {showOnboarding ? (
+          // Show only the chat interface during onboarding
+          <ChatInterface user={user} onOnboardingComplete={handleOnboardingComplete} />
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+            <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14">
+              <TabsTrigger value="chat" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+                <Circle className="w-4 h-4" />
+                <span className="font-medium">AI Guide</span>
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+                <User className="w-4 h-4" />
+                <span className="font-medium">Progress</span>
+              </TabsTrigger>
+              <TabsTrigger value="quests" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+                <Book className="w-4 h-4" />
+                <span className="font-medium">Quests</span>
+              </TabsTrigger>
+              <TabsTrigger value="leaderboard" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+                <img 
+                  src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                  alt="AIShura" 
+                  className="w-4 h-4 object-contain filter brightness-0 invert"
+                />
+                <span className="font-medium">Leaderboard</span>
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="chat" className="space-y-0">
-            <ChatInterface user={user} />
-          </TabsContent>
+            <TabsContent value="chat" className="space-y-0">
+              <ChatInterface user={user} />
+            </TabsContent>
 
-          <TabsContent value="progress" className="space-y-0">
-            <UserProgress user={user} />
-          </TabsContent>
+            <TabsContent value="progress" className="space-y-0">
+              <UserProgress user={user} />
+            </TabsContent>
 
-          <TabsContent value="quests" className="space-y-0">
-            <QuestSystem user={user} />
-          </TabsContent>
+            <TabsContent value="quests" className="space-y-0">
+              <QuestSystem user={user} />
+            </TabsContent>
 
-          <TabsContent value="leaderboard" className="space-y-0">
-            <Leaderboard user={user} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="leaderboard" className="space-y-0">
+              <Leaderboard user={user} />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   );

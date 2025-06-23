@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Star, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
   onAuthClick: () => void;
@@ -19,7 +19,11 @@ export const Navbar = ({ onAuthClick, isAuthenticated, onLogout }: NavbarProps) 
           {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Star className="w-6 h-6 text-white" />
+              <img 
+                src="/lovable-uploads/dbdcc5ac-24ad-45ce-9bbe-1a46ce2ac141.png" 
+                alt="AIShura Logo" 
+                className="w-6 h-6 object-contain filter brightness-0 invert"
+              />
             </div>
             <h1 className="font-orbitron text-2xl font-bold text-gradient">AIShura</h1>
           </div>
