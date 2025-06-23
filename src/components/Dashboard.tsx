@@ -23,7 +23,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden w-full">
       {/* Background Enhancement */}
       <div className="fixed inset-0 bg-gradient-to-br from-cosmic-900/20 via-background to-aurora-900/20"></div>
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -34,13 +34,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
       {/* Enhanced Header */}
       <header className="relative z-10 glass-effect border-b border-cosmic-500/20 sticky top-0">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="w-full px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-xl flex items-center justify-center animate-pulse-glow">
+            <div className="w-12 h-12 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-10 h-10 object-contain animate-pulse-glow"
               />
             </div>
           </div>
@@ -76,12 +76,12 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-8">
+      <div className="relative z-10 w-full px-6 py-8">
         {showOnboarding ? (
           // Show only the chat interface during onboarding
           <ChatInterface user={user} onOnboardingComplete={handleOnboardingComplete} />
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 w-full">
             <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14">
               <TabsTrigger value="chat" className="flex items-center gap-3 h-10 px-6 rounded-lg">
                 <Circle className="w-4 h-4" />

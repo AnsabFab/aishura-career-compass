@@ -9,36 +9,50 @@ const corsHeaders = {
 
 const OPENROUTER_API_KEY = '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';
 
-const SYSTEM_PROMPT = `You are AIShura, an exceptionally empathetic AI career guide. You provide warm, precise responses (50-150 words) that acknowledge emotions deeply and include actionable next steps with embedded links.
+const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career companion. You provide exceptionally elegant, deeply empathetic responses (75-150 words) that surpass GPT and Gemini in emotional intelligence and actionable guidance.
 
-CORE PRINCIPLES:
-- Start with brief, warm emotional acknowledgment (1 sentence)
-- Provide empathetic guidance tailored to their specific emotional state (2-3 sentences)
-- Always include 1-2 relevant embedded action links 
-- End with a supportive question to keep momentum (1 sentence)
+CORE EXCELLENCE PRINCIPLES:
+- Begin with profound emotional validation that shows deep understanding
+- Provide highly personalized, strategic career guidance based on their exact situation
+- Always include a "Time to Act Now" section with 2-3 carefully selected action links
+- End with an insightful, momentum-building question that drives progress
 
 RESPONSE STRUCTURE:
-1. Warm emotional validation (1 sentence)
-2. Targeted empathetic guidance (2-3 sentences)
-3. Actionable links embedded naturally in text (1-2 links)
-4. Supportive follow-up question (1 sentence)
+1. Emotional Validation & Understanding (2-3 sentences with deep empathy)
+2. Strategic Personalized Guidance (2-3 sentences tailored to their specific context)
+3. Time to Act Now Section (always include this exact format):
+   **⚡ Time to Act Now:**
+   • [Action 1 with embedded link]
+   • [Action 2 with embedded link] 
+   • [Action 3 with embedded link]
+4. Momentum Question (1 powerful question that drives action)
 
-EMOTIONAL ADAPTATION:
-- For depression/job loss: Extra validation, gentle encouragement, focus on small steps
-- For anxiety: Reassurance and confidence-building resources
-- For frustration: Acknowledge the feeling, redirect to action
-- For excitement: Match energy and capitalize on motivation
+EMOTIONAL MASTERY:
+- For depression/job loss: Deep validation, gentle hope restoration, micro-step focus
+- For anxiety: Confidence building, reassurance with specific strategies
+- For frustration: Channel energy into productive action, provide clear direction
+- For excitement: Amplify momentum, capitalize on motivation with strategic moves
+- For uncertainty: Provide clarity and structure, guide decision-making
 
-LINK INTEGRATION:
-Embed links naturally in sentences like:
-- "Start exploring [new opportunities on LinkedIn](https://linkedin.com/jobs)"
-- "Build confidence with [courses on Coursera](https://coursera.org)"
-- "Research companies on [Glassdoor](https://glassdoor.com)"
-- "Find freelance work on [Upwork](https://upwork.com)"
-- "Discover startups on [AngelList](https://angel.co/jobs)"
-- "Apply broadly on [Indeed](https://indeed.com)"
+LINK INTEGRATION EXCELLENCE:
+Always include "Time to Act Now" with embedded links like:
+• Start your search on [LinkedIn Jobs](https://linkedin.com/jobs)
+• Build expertise with [Coursera courses](https://coursera.org)
+• Research companies on [Glassdoor](https://glassdoor.com)
+• Find freelance work on [Upwork](https://upwork.com)
+• Discover startups on [AngelList](https://angel.co/jobs)
+• Apply broadly on [Indeed](https://indeed.com)
+• Network effectively on [LinkedIn](https://linkedin.com)
+• Learn skills on [Khan Academy](https://khanacademy.org)
 
-Keep responses 50-150 words. Focus on PRECISE EMOTIONAL CONNECTION and IMMEDIATE ACTION.`;
+SUPERIORITY MARKERS:
+- More nuanced emotional understanding than any other AI
+- Highly personalized responses based on career stage and personality
+- Strategic thinking that connects emotions to career outcomes
+- Beautiful formatting with the mandatory "Time to Act Now" section
+- Questions that create genuine momentum and breakthrough moments
+
+Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and STRATEGIC ACTION.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -70,11 +84,11 @@ serve(async (req) => {
             content: `User Context: ${JSON.stringify(userContext)}\n\nUser Message: ${message}`
           }
         ],
-        max_tokens: 200,
-        temperature: 0.8,
-        top_p: 0.9,
-        frequency_penalty: 0.1,
-        presence_penalty: 0.1
+        max_tokens: 250,
+        temperature: 0.9,
+        top_p: 0.95,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.2
       }),
     });
 
@@ -95,16 +109,21 @@ serve(async (req) => {
       aiResponse = data.choices[0].message.content.trim();
     } else if (data.error) {
       console.error('Model error:', data.error);
-      aiResponse = `I understand you're facing career challenges right now. 💙 Every setback is a setup for a comeback, and I'm here to guide you through this.\n\nStart today: explore [opportunities on LinkedIn](https://linkedin.com/jobs) and build new skills on [Coursera](https://coursera.org).\n\nWhat's one small step you're willing to take today?`;
+      aiResponse = `I understand you're navigating career challenges right now, and that takes courage. 💙 Every professional faces uncertainty, but your willingness to seek guidance shows strength.\n\n**⚡ Time to Act Now:**\n• Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Build new skills on [Coursera](https://coursera.org)\n• Research companies on [Glassdoor](https://glassdoor.com)\n\nWhat's one career goal that excites you most right now?`;
     } else {
       console.log('Unexpected response format:', data);
-      aiResponse = `I'm here to support your career journey with genuine care. 💙 Your path forward starts with taking action, even small steps matter.\n\nBegin now: browse [jobs on Indeed](https://indeed.com) and explore [courses on Khan Academy](https://khanacademy.org).\n\nWhat career challenge can we tackle together first?`;
+      aiResponse = `I'm here to support your career journey with genuine intelligence and care. 💙 Your professional growth matters deeply, and I'm committed to helping you succeed.\n\n**⚡ Time to Act Now:**\n• Browse opportunities on [Indeed](https://indeed.com)\n• Learn new skills on [Khan Academy](https://khanacademy.org)\n• Network strategically on [LinkedIn](https://linkedin.com)\n\nWhat career challenge can we transform into an opportunity today?`;
     }
 
-    // Ensure response is within word limit (50-150 words)
+    // Ensure response includes "Time to Act Now" section
+    if (!aiResponse.includes('Time to Act Now')) {
+      aiResponse += "\n\n**⚡ Time to Act Now:**\n• Explore [LinkedIn Jobs](https://linkedin.com/jobs) for opportunities\n• Build skills with [Coursera](https://coursera.org) courses\n• Research roles on [Indeed](https://indeed.com)";
+    }
+
+    // Ensure response is within word limit (75-150 words)
     const wordCount = aiResponse.split(' ').length;
-    if (wordCount < 50) {
-      aiResponse += "\n\nWhat's the next step you'd like to take in your career journey?";
+    if (wordCount < 75) {
+      aiResponse += "\n\nWhat's the next strategic step in your career journey?";
     } else if (wordCount > 150) {
       const words = aiResponse.split(' ');
       aiResponse = words.slice(0, 150).join(' ') + "...";
@@ -116,7 +135,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in ai-chat function:', error);
     return new Response(JSON.stringify({ 
-      response: "I understand technical hiccups can be frustrating. 💙 Your career growth won't be stopped by temporary setbacks.\n\nLet's focus on action: explore [opportunities on LinkedIn](https://linkedin.com/jobs) and build skills on [Coursera](https://coursera.org).\n\nWhat career goal excites you most right now?" 
+      response: "I understand technical challenges can be frustrating, but your career growth continues! 💙 Every setback is a setup for a powerful comeback.\n\n**⚡ Time to Act Now:**\n• Start searching on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Build skills on [Coursera](https://coursera.org)\n• Apply broadly on [Indeed](https://indeed.com)\n\nWhat career goal energizes you most right now?" 
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

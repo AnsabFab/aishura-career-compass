@@ -14,15 +14,15 @@ export const Navbar = ({ onAuthClick, isAuthenticated, onLogout }: NavbarProps) 
 
   return (
     <nav className="fixed top-0 w-full z-50 glass-effect border-b border-cosmic-500/20 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo Only */}
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-cosmic-500 to-aurora-500 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-10 h-10 object-contain"
               />
             </div>
           </div>

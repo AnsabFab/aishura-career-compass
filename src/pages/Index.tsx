@@ -38,7 +38,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col w-full">
       {/* Navigation */}
       <Navbar 
         onAuthClick={handleAuthClick}
@@ -53,7 +53,7 @@ const Index = () => {
         <div className="floating-orb w-32 h-32 bottom-20 left-1/3 opacity-25" style={{ animationDelay: '4s' }} />
       </div>
 
-      <main className="flex-1 relative z-10">
+      <main className="flex-1 relative z-10 w-full">
         {!isAuthenticated ? (
           <Hero onAuthClick={handleAuthClick} />
         ) : (

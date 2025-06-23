@@ -160,31 +160,31 @@ export const ChatInterface = ({ user, onOnboardingComplete }: ChatInterfaceProps
   const getPersonalizedGreeting = () => {
     const { careerStage, emotionalState } = userPersona;
     
-    let actionLinks = '';
     let emotionalResponse = '';
+    let actionSection = '';
     
     // More precise emotional adaptation
     if (emotionalState.includes('Anxious')) {
-      emotionalResponse = "I understand that career anxiety - it shows how much this matters to you. 💙 Those feelings are completely valid.";
-      actionLinks = 'Start small: explore opportunities on [LinkedIn](https://linkedin.com/jobs) and build confidence with courses on [Coursera](https://coursera.org).';
+      emotionalResponse = "I deeply understand that career anxiety - it shows how much your future matters to you. 💙 Those feelings are completely valid, and I'm here to transform them into confident action.";
+      actionSection = '**⚡ Time to Act Now:**\n• Explore opportunities gently on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Build confidence with [Coursera courses](https://coursera.org)\n• Research companies at your pace on [Glassdoor](https://glassdoor.com)';
     } else if (emotionalState.includes('Frustrated')) {
-      emotionalResponse = "I feel that frustration with you - it's energy ready to be channeled into positive action. 🔥";
-      actionLinks = 'Take action now: discover new roles on [Indeed](https://indeed.com) and advance skills on [Khan Academy](https://khanacademy.org).';
+      emotionalResponse = "I feel that frustration with you - it's powerful energy ready to be channeled into breakthrough moments. 🔥 Your determination is already showing.";
+      actionSection = '**⚡ Time to Act Now:**\n• Channel energy into searching [Indeed](https://indeed.com)\n• Transform frustration with [skill building](https://khanacademy.org)\n• Network strategically on [LinkedIn](https://linkedin.com)';
     } else if (emotionalState.includes('Excited')) {
-      emotionalResponse = "Your excitement is inspiring! ✨ Let's harness that energy for real career momentum.";
-      actionLinks = 'Capitalize now: explore exciting startups on [AngelList](https://angel.co/jobs) and master skills on [Coursera](https://coursera.org).';
+      emotionalResponse = "Your excitement is absolutely infectious! ✨ This energy is the perfect fuel for creating extraordinary career momentum.";
+      actionSection = '**⚡ Time to Act Now:**\n• Capitalize on momentum with [AngelList startups](https://angel.co/jobs)\n• Master new skills on [Coursera](https://coursera.org)\n• Network actively on [LinkedIn](https://linkedin.com)';
     } else {
-      emotionalResponse = "I see the mix of emotions you're navigating - that's completely human. 🌟";
-      actionLinks = 'Move forward: research companies on [Glassdoor](https://glassdoor.com) and grow with [LinkedIn Learning](https://linkedin.com/learning).';
+      emotionalResponse = "I see the beautiful complexity of emotions you're navigating - that's so deeply human. 🌟 Your journey is unique and valuable.";
+      actionSection = '**⚡ Time to Act Now:**\n• Research thoughtfully on [Glassdoor](https://glassdoor.com)\n• Grow skills with [LinkedIn Learning](https://linkedin.com/learning)\n• Explore opportunities on [Indeed](https://indeed.com)';
     }
     
-    return `Hello beautiful soul! ✨ I'm AIShura, and I'm genuinely honored to be part of your career journey.
+    return `Hello beautiful soul! ✨ I'm AIShura, and I'm genuinely honored to be part of your career transformation.
 
 ${emotionalResponse}
 
-${actionLinks}
+${actionSection}
 
-What's the strongest emotion you're feeling about your career right now?`;
+What's the strongest emotion driving your career decisions right now?`;
   };
 
   const handleInputChange = (value: string) => {
@@ -315,14 +315,14 @@ What's the strongest emotion you're feeling about your career right now?`;
     const currentQ = personaQuestions[currentQuestion];
     
     return (
-      <div className="h-[calc(100vh-12rem)] flex items-center justify-center p-6">
+      <div className="h-[calc(100vh-12rem)] flex items-center justify-center p-6 w-full">
         <Card className="w-full max-w-3xl glass-effect border-cosmic-500/20 animate-scale-in bg-gradient-to-br from-cosmic-900/10 via-background to-aurora-900/10">
           <CardHeader className="text-center space-y-6">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow relative">
+            <div className="w-20 h-20 mx-auto mb-6 flex items-center justify-center relative">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-12 h-12 object-contain"
+                className="w-16 h-16 object-contain animate-pulse-glow"
               />
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-aurora-400 to-neon-400 rounded-full flex items-center justify-center">
                 <Sparkles className="w-3 h-3 text-white" />
@@ -371,16 +371,16 @@ What's the strongest emotion you're feeling about your career right now?`;
   }
 
   return (
-    <div className="h-[calc(100vh-12rem)] flex flex-col">
+    <div className="h-[calc(100vh-12rem)] flex flex-col w-full">
       {/* Enhanced Futuristic Chat Header */}
       <div className="glass-effect border border-cosmic-500/20 rounded-t-xl p-6 border-b bg-gradient-to-r from-cosmic-900/20 via-background to-aurora-900/20">
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className="w-14 h-14 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow">
+            <div className="w-14 h-14 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-10 h-10 object-contain animate-pulse-glow"
               />
             </div>
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-2 border-background animate-pulse flex items-center justify-center">

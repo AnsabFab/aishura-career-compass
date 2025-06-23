@@ -47,7 +47,7 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 w-full">
       {/* Background Video Effect */}
       <div className="absolute inset-0">
         <img 
@@ -67,7 +67,7 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 text-center max-w-6xl mx-auto px-4 py-20">
+      <div className="relative z-10 text-center w-full max-w-6xl mx-auto px-4 py-20">
         {/* Badge */}
         <Badge className="mb-6 bg-cosmic-500/20 text-cosmic-300 border-cosmic-500/30 px-4 py-2 text-sm animate-fade-in">
           <Sparkles className="w-4 h-4 mr-2" />
@@ -77,11 +77,11 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
         {/* Main Logo */}
         <div className="mb-8 animate-scale-in">
           <div className="flex items-center justify-center gap-6 mb-6">
-            <div className="w-32 h-32 bg-gradient-to-br from-cosmic-500 via-aurora-500 to-neon-500 rounded-full flex items-center justify-center animate-pulse-glow shadow-2xl">
+            <div className="w-32 h-32 flex items-center justify-center shadow-2xl">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-20 h-20 object-contain"
+                className="w-24 h-24 object-contain animate-pulse-glow"
               />
             </div>
           </div>
