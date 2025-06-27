@@ -115,7 +115,41 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
   const handleOnboardingComplete = (persona: UserPersona) => {
     setUserPersona(persona);
     setShowOnboarding(false);
-    createNewSession();
+    
+    // Create new session first
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: 'Welcome to AIShura',
+      lastMessage: '',
+      timestamp: new Date(),
+      messages: []
+    };
+
+    setSessions([newSession]);
+    setActiveSessionId(newSession.id);
+
+    // Add welcome message after a short delay to ensure session is set
+    setTimeout(() => {
+      const welcomeMessage = getPersonalizedWelcome(persona);
+      const aiMessage: Message = {
+        id: Date.now().toString(),
+        content: welcomeMessage,
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      
+      // Update the session with the welcome message
+      setSessions(prev => prev.map(session => 
+        session.id === newSession.id 
+          ? { 
+              ...session, 
+              messages: [aiMessage],
+              lastMessage: welcomeMessage,
+              title: 'Welcome to AIShura'
+            }
+          : session
+      ));
+    }, 800);
   };
 
   const createNewSession = () => {
@@ -129,21 +163,6 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
 
     setSessions(prev => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
-
-    // Add welcome message
-    if (userPersona) {
-      const welcomeMessage = getPersonalizedWelcome(userPersona);
-      const aiMessage: Message = {
-        id: Date.now().toString(),
-        content: welcomeMessage,
-        sender: 'ai',
-        timestamp: new Date()
-      };
-      
-      setTimeout(() => {
-        updateSessionMessages(newSession.id, [aiMessage]);
-      }, 500);
-    }
   };
 
   const getPersonalizedWelcome = (persona: UserPersona) => {

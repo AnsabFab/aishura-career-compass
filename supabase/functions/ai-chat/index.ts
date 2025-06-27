@@ -18,6 +18,7 @@ CORE EXCELLENCE PRINCIPLES:
 - End with an insightful momentum-building question
 - NEVER use asterisks or markdown formatting - write clean, flowing text
 - Make responses action-oriented and immediately actionable
+- DO NOT include reasoning or thinking processes in your response
 
 RESPONSE STRUCTURE (MANDATORY):
 1. Empathetic Validation (2-3 sentences with deep empathy)
@@ -115,7 +116,19 @@ serve(async (req) => {
     let aiResponse = '';
 
     if (data.choices && data.choices[0]?.message?.content) {
+      // Extract only the content, removing any reasoning sections
       aiResponse = data.choices[0].message.content.trim();
+      
+      // Remove reasoning section if it exists
+      const reasoningStart = aiResponse.indexOf('<thinking>');
+      const reasoningEnd = aiResponse.indexOf('</thinking>');
+      if (reasoningStart !== -1 && reasoningEnd !== -1) {
+        aiResponse = aiResponse.substring(0, reasoningStart) + aiResponse.substring(reasoningEnd + 11);
+      }
+      
+      // Also remove any other reasoning patterns
+      aiResponse = aiResponse.replace(/.*reasoning.*:[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi, '').trim();
+      
     } else {
       console.error('No response content:', data);
       const { industry = 'Technology', location = '' } = userContext.persona || {};
