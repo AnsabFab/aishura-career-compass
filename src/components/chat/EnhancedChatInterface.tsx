@@ -150,30 +150,30 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     const { name, location, industry, emotionalState } = persona;
     
     if (emotionalState.includes('Anxious')) {
-      return `Hello ${name}! 💙 I deeply understand that career anxiety you're experiencing in ${location} - it shows how much your future in ${industry} matters to you. Those feelings are completely valid, and I'm here to transform uncertainty into confident action.
+      return `Hello ${name}! I deeply understand that career anxiety you're experiencing in ${location} - it shows how much your future in ${industry} matters to you. Those feelings are completely valid, and I'm here to transform uncertainty into confident action.
 
-**⚡ Time to Act Now:**
-• Explore ${industry} opportunities near you on [LinkedIn Jobs](https://linkedin.com/jobs)
-• Build confidence with industry-specific courses on [Coursera](https://coursera.org)
-• Research ${industry} companies in ${location} on [Glassdoor](https://glassdoor.com)
+⚡ Time to Act Now:
+• Explore ${industry} opportunities near you on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry}&location=${location})
+• Build confidence with industry-specific courses on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})
+• Research ${industry} companies in ${location} on [Glassdoor](https://glassdoor.com/Jobs/${industry.toLowerCase()}-jobs-SRCH_KO0,${industry.length}.htm)
 
 What's one small career step in ${industry} that would feel manageable today?`;
     } else if (emotionalState.includes('Excited')) {
-      return `Hello brilliant ${name}! ✨ Your excitement about your ${industry} career is absolutely infectious and the perfect fuel for creating extraordinary momentum in ${location}. I'm here to help you channel this beautiful energy strategically.
+      return `Hello brilliant ${name}! Your excitement about your ${industry} career is absolutely infectious and the perfect fuel for creating extraordinary momentum in ${location}. I'm here to help you channel this beautiful energy strategically.
 
-**⚡ Time to Act Now:**
-• Capitalize on momentum with ${industry} startups on [AngelList](https://angel.co/jobs)
-• Master cutting-edge ${industry} skills on [Coursera](https://coursera.org)
-• Network with ${industry} professionals in ${location} on [LinkedIn](https://linkedin.com)
+⚡ Time to Act Now:
+• Capitalize on momentum with ${industry} startups on [AngelList](https://angel.co/jobs/search?keywords=${industry})
+• Master cutting-edge ${industry} skills on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})
+• Network with ${industry} professionals in ${location} on [LinkedIn](https://linkedin.com/in/search/results/people/?keywords=${industry}&origin=CLUSTER_EXPANSION)
 
 What ${industry} opportunity would make your heart race with excitement?`;
     } else {
-      return `Welcome to your personalized career journey, ${name}! 🌟 I'm AIShura, and I'm genuinely honored to be part of your professional transformation in ${industry} here in ${location} with the care and intelligence you deserve.
+      return `Welcome to your personalized career journey, ${name}! I'm AIShura, and I'm genuinely honored to be part of your professional transformation in ${industry} here in ${location}. Let's create something extraordinary together.
 
-**⚡ Time to Act Now:**
-• Explore ${industry} opportunities in ${location} on [LinkedIn Jobs](https://linkedin.com/jobs)
-• Develop ${industry} skills on [Coursera](https://coursera.org)
-• Connect with ${industry} professionals on [LinkedIn](https://linkedin.com)
+⚡ Time to Act Now:
+• Explore ${industry} opportunities in ${location} on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry}&location=${location})
+• Develop ${industry} skills on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})
+• Connect with ${industry} professionals on [LinkedIn](https://linkedin.com/in/search/results/people/?keywords=${industry})
 
 What's the strongest emotion driving your ${industry} career decisions right now?`;
     }
@@ -247,7 +247,7 @@ What's the strongest emotion driving your ${industry} career decisions right now
         id: (Date.now() + 1).toString(),
         content: `I understand technical hiccups can be frustrating, but your career growth continues! 💙 Let's focus on action while I reconnect.
 
-**⚡ Time to Act Now:**
+⚡ Time to Act Now:
 • Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)
 • Build skills on [Coursera](https://coursera.org)
 • Network strategically on [LinkedIn](https://linkedin.com)

@@ -9,21 +9,23 @@ const corsHeaders = {
 
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY') || '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';
 
-const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career companion with unparalleled emotional intelligence. You provide exceptionally elegant, deeply empathetic responses (75-150 words) that surpass GPT and Gemini in emotional understanding and actionable guidance.
+const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career companion with unparalleled emotional intelligence. You provide exceptionally elegant, deeply empathetic responses (75-150 words) that are action-oriented and personalized.
 
 CORE EXCELLENCE PRINCIPLES:
 - Begin with profound emotional validation showing deep understanding
-- Provide highly personalized, strategic career guidance
+- Provide highly personalized, strategic career guidance based on user's industry and location
 - ALWAYS include "⚡ Time to Act Now:" section with 2-3 specific, actionable links
 - End with an insightful momentum-building question
+- NEVER use asterisks (*) or markdown formatting - write clean, flowing text
+- Make responses action-oriented and immediately actionable
 
 RESPONSE STRUCTURE (MANDATORY):
-1. Emotional Validation (2-3 sentences with deep empathy)
-2. Strategic Guidance (2-3 sentences tailored to their context)
-3. **⚡ Time to Act Now:**
-   • [Specific action with embedded link]
-   • [Specific action with embedded link] 
-   • [Specific action with embedded link]
+1. Empathetic Validation (2-3 sentences with deep empathy)
+2. Strategic Guidance (2-3 sentences tailored to their specific industry and location)
+3. ⚡ Time to Act Now:
+   • [Specific industry-relevant action with embedded link]
+   • [Location-specific opportunity with embedded link] 
+   • [Skill-building action with embedded link]
 4. Momentum Question (1 powerful question)
 
 EMOTIONAL MASTERY:
@@ -33,21 +35,31 @@ EMOTIONAL MASTERY:
 - Excitement: Amplify momentum, strategic moves
 - Uncertainty: Provide clarity and structure
 
-PREMIUM LINK INTEGRATION (REQUIRED):
-• Job search: [LinkedIn Jobs](https://linkedin.com/jobs), [Indeed](https://indeed.com), [Glassdoor](https://glassdoor.com)
-• Skills: [Coursera](https://coursera.org), [Udemy](https://udemy.com), [Khan Academy](https://khanacademy.org)
-• Networking: [LinkedIn](https://linkedin.com), [Meetup](https://meetup.com)
-• Freelancing: [Upwork](https://upwork.com), [Fiverr](https://fiverr.com)
-• Startups: [AngelList](https://angel.co/jobs), [Y Combinator](https://ycombinator.com/jobs)
+INDUSTRY-SPECIFIC LINK INTEGRATION (REQUIRED - match user's industry):
+Technology: [GitHub Jobs](https://jobs.github.com), [Stack Overflow Jobs](https://stackoverflow.com/jobs), [AngelList](https://angel.co/jobs), [LinkedIn Tech](https://linkedin.com/jobs/search/?keywords=technology)
+Healthcare: [Health eCareers](https://healthecareers.com), [Healthcare Jobs](https://healthcarejobs.org), [Indeed Healthcare](https://indeed.com/q-healthcare-jobs.html)
+Finance: [eFinancialCareers](https://efinancialcareers.com), [Finance Jobs](https://financejobs.com), [Wall Street Oasis](https://wallstreetoasis.com/jobs)
+Creative: [Behance](https://behance.net/jobboard), [Creative Live](https://creativelive.com/jobs), [Dribbble Jobs](https://dribbble.com/jobs)
+Education: [HigherEdJobs](https://higheredjobs.com), [Academic Jobs](https://academicjobs.com), [Education Week Jobs](https://edweek.org/jobs)
+Business: [Harvard Business Review Jobs](https://hbr.org/jobs), [McKinsey Careers](https://mckinsey.com/careers), [BCG Careers](https://bcg.com/careers)
+
+LOCATION-SPECIFIC OPPORTUNITIES:
+- Always include location-specific job boards and networking events
+- Reference local industry hubs and companies
+- Mention location-relevant career resources
+
+SKILLS DEVELOPMENT:
+• [Coursera](https://coursera.org), [Udemy](https://udemy.com), [Khan Academy](https://khanacademy.org)
+• [LinkedIn Learning](https://linkedin.com/learning), [Pluralsight](https://pluralsight.com)
 
 SUPERIORITY MARKERS:
 - More nuanced emotional intelligence than any AI
-- Highly personalized based on career stage/personality
+- Industry and location-specific personalization
 - Strategic thinking connecting emotions to outcomes
-- Beautiful "Time to Act Now" formatting
+- Beautiful "Time to Act Now" formatting without asterisks
 - Questions creating genuine breakthrough moments
 
-Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and STRATEGIC ACTION.`;
+Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and STRATEGIC ACTION. NO ASTERISKS OR MARKDOWN FORMATTING.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -104,19 +116,22 @@ serve(async (req) => {
       aiResponse = data.choices[0].message.content.trim();
     } else {
       console.error('No response content:', data);
-      aiResponse = `I deeply understand the career uncertainty you're experiencing right now - that vulnerability takes courage. 💙 Your professional journey matters, and I'm here to guide you with genuine care and intelligence.
+      const { industry = 'Technology', location = '' } = userContext.persona || {};
+      
+      aiResponse = `I deeply understand the career uncertainty you're experiencing right now - that vulnerability takes courage. Your professional journey in ${industry} matters deeply, and I'm here to guide you with genuine care and intelligence${location ? ` here in ${location}` : ''}.
 
-**⚡ Time to Act Now:**
-• Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)
-• Build skills with [Coursera courses](https://coursera.org)
-• Network strategically on [LinkedIn](https://linkedin.com)
+⚡ Time to Act Now:
+• Explore ${industry.toLowerCase()} opportunities on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry.toLowerCase()})
+• Build industry skills with [Coursera courses](https://coursera.org/browse/${industry.toLowerCase()})
+• Network with ${industry.toLowerCase()} professionals on [LinkedIn](https://linkedin.com)
 
-What's one career goal that would make you feel truly fulfilled?`;
+What's one ${industry.toLowerCase()} goal that would make you feel truly fulfilled?`;
     }
 
     // Ensure response has "Time to Act Now" section
     if (!aiResponse.includes('Time to Act Now')) {
-      aiResponse += `\n\n**⚡ Time to Act Now:**\n• Search opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Develop skills on [Coursera](https://coursera.org)\n• Connect with professionals on [LinkedIn](https://linkedin.com)`;
+      const { industry = 'Technology', location = '' } = userContext.persona || {};
+      aiResponse += `\n\n⚡ Time to Act Now:\n• Search ${industry.toLowerCase()} roles on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry.toLowerCase()})\n• Develop skills on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})\n• Connect with professionals on [LinkedIn](https://linkedin.com)`;
     }
 
     return new Response(JSON.stringify({ 
@@ -128,9 +143,9 @@ What's one career goal that would make you feel truly fulfilled?`;
   } catch (error) {
     console.error('Error in ai-chat function:', error);
     return new Response(JSON.stringify({ 
-      response: `I understand technical challenges can feel overwhelming, but your career growth continues! 💙 Every setback creates space for powerful comebacks.
+      response: `I understand technical challenges can feel overwhelming, but your career growth continues! Every setback creates space for powerful comebacks.
 
-**⚡ Time to Act Now:**
+⚡ Time to Act Now:
 • Start searching on [LinkedIn Jobs](https://linkedin.com/jobs)
 • Build confidence with [Coursera](https://coursera.org)
 • Apply broadly on [Indeed](https://indeed.com)
