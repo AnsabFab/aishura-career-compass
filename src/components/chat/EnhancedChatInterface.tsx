@@ -77,9 +77,9 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     if (!activeSession) return;
     
     const nudges = [
-      "I can sense you're taking a thoughtful moment - that's wonderful. 💭 Sometimes the most important thoughts need time to form. Take all the space you need, I'm here with you.",
-      "I notice you're being really intentional with your words, and I appreciate that care. 🌟 There's no rush at all - authentic conversations unfold naturally.",
-      "It feels like you might be processing something important right now. 💙 That pause shows how much this matters to you. I'm here whenever you're ready to share."
+      "I can sense you're taking a thoughtful moment - that's wonderful. Sometimes the most important thoughts need time to form. Take all the space you need, I'm here with you.",
+      "I notice you're being really intentional with your words, and I appreciate that care. There's no rush at all - authentic conversations unfold naturally.",
+      "It feels like you might be processing something important right now. That pause shows how much this matters to you. I'm here whenever you're ready to share."
     ];
     
     const randomNudge = nudges[Math.floor(Math.random() * nudges.length)];
@@ -235,7 +235,7 @@ What's the strongest emotion driving your ${industry} career decisions right now
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "I'm here to support your career journey with genuine care. What's one career emotion you're experiencing right now? 💙",
+        content: data.response || "I'm here to support your career journey with genuine care. What's one career emotion you're experiencing right now?",
         sender: 'ai',
         timestamp: new Date()
       };
@@ -245,7 +245,7 @@ What's the strongest emotion driving your ${industry} career decisions right now
       console.error('AI Chat Error:', error);
       const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand technical hiccups can be frustrating, but your career growth continues! 💙 Let's focus on action while I reconnect.
+        content: `I understand technical hiccups can be frustrating, but your career growth continues! Let's focus on action while I reconnect.
 
 ⚡ Time to Act Now:
 • Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)

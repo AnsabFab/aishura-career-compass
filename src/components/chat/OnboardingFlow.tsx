@@ -42,21 +42,12 @@ const questions = [
   },
   {
     id: 'industry',
-    title: 'What industry sparks your passion? 🔥',
-    subtitle: 'This helps me tailor resources specifically for your field.',
-    type: 'select',
+    title: 'What industry ignites your passion? 🔥',
+    subtitle: 'Tell me your specific field to get the most precise opportunities.',
+    type: 'input',
+    placeholder: 'e.g., Software Development, Data Science, UX Design',
     emoji: '💼',
-    gradient: 'from-green-400 via-emerald-400 to-cyan-400',
-    options: [
-      { value: 'Technology', emoji: '💻', desc: 'Software, AI, Data Science' },
-      { value: 'Healthcare', emoji: '🏥', desc: 'Medicine, Nursing, Pharma' },
-      { value: 'Finance', emoji: '💰', desc: 'Banking, Investment, Fintech' },
-      { value: 'Creative', emoji: '🎨', desc: 'Design, Marketing, Content' },
-      { value: 'Education', emoji: '📚', desc: 'Teaching, Training, EdTech' },
-      { value: 'Business', emoji: '📈', desc: 'Consulting, Sales, Operations' },
-      { value: 'Engineering', emoji: '⚙️', desc: 'Mechanical, Civil, Electrical' },
-      { value: 'Other', emoji: '🌟', desc: 'Tell me about your unique path!' }
-    ]
+    gradient: 'from-green-400 via-emerald-400 to-cyan-400'
   },
   {
     id: 'careerStage',
@@ -181,24 +172,24 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         <div className="floating-orb w-48 h-48 bottom-10 left-1/3 opacity-25" style={{ animationDelay: '4s' }} />
       </div>
 
-      <Card className="w-full max-w-lg glass-effect border-cosmic-500/30 bg-gradient-to-br from-cosmic-900/10 to-aurora-900/10 backdrop-blur-xl shadow-2xl animate-scale-in">
-        <CardHeader className="text-center space-y-4 pb-4">
-          <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
+      <Card className="w-full max-w-md glass-effect border-cosmic-500/30 bg-gradient-to-br from-cosmic-900/10 to-aurora-900/10 backdrop-blur-xl shadow-2xl animate-scale-in">
+        <CardHeader className="text-center space-y-3 pb-3">
+          <div className="relative mx-auto w-12 h-12 flex items-center justify-center">
             <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${currentQuestion.gradient} opacity-20 animate-pulse`}></div>
-            <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-cosmic-500/20 to-aurora-500/20 flex items-center justify-center border border-cosmic-500/30">
+            <div className="relative w-8 h-8 rounded-full bg-gradient-to-r from-cosmic-500/20 to-aurora-500/20 flex items-center justify-center border border-cosmic-500/30">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-8 h-8 object-contain animate-pulse-glow"
+                className="w-5 h-5 object-contain animate-pulse-glow"
               />
             </div>
-            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-aurora-400 to-neon-400 rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-sm animate-bounce">{currentQuestion.emoji}</span>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-aurora-400 to-neon-400 rounded-full flex items-center justify-center shadow-lg">
+              <span className="text-xs animate-bounce">{currentQuestion.emoji}</span>
             </div>
           </div>
           
           <div>
-            <CardTitle className="text-xl font-orbitron text-gradient bg-gradient-to-r from-cosmic-400 via-aurora-400 to-neon-400 bg-clip-text mb-2">
+            <CardTitle className="text-lg font-orbitron text-gradient bg-gradient-to-r from-cosmic-400 via-aurora-400 to-neon-400 bg-clip-text mb-1">
               AIShura Career Companion
             </CardTitle>
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
@@ -209,47 +200,47 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           </div>
 
           {/* Progress indicators */}
-          <div className="flex justify-center gap-1 mt-4">
+          <div className="flex justify-center gap-1 mt-3">
             {questions.map((_, index) => (
               <div
                 key={index}
-                className={`h-1.5 rounded-full transition-all duration-700 ${
-                  index < currentStep ? 'w-6 bg-gradient-to-r from-cosmic-500 to-aurora-500' 
-                  : index === currentStep ? 'w-8 bg-gradient-to-r from-aurora-500 to-neon-500 animate-pulse' 
-                  : 'w-1.5 bg-cosmic-500/30'
+                className={`h-1 rounded-full transition-all duration-700 ${
+                  index < currentStep ? 'w-4 bg-gradient-to-r from-cosmic-500 to-aurora-500' 
+                  : index === currentStep ? 'w-6 bg-gradient-to-r from-aurora-500 to-neon-500 animate-pulse' 
+                  : 'w-1 bg-cosmic-500/30'
                 }`}
               />
             ))}
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 pb-6">
+        <CardContent className="space-y-3 pb-4">
           <div className="text-center space-y-2">
-            <h2 className="text-lg font-bold text-foreground leading-tight">
+            <h2 className="text-base font-bold text-foreground leading-tight">
               {currentQuestion.title}
             </h2>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-muted-foreground text-xs leading-relaxed">
               {currentQuestion.subtitle}
             </p>
           </div>
 
           {currentQuestion.type === 'input' ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder={currentQuestion.placeholder}
-                className="h-10 text-center bg-background/50 border-cosmic-500/30 focus:border-aurora-500 rounded-lg"
+                className="h-9 text-center bg-background/50 border-cosmic-500/30 focus:border-aurora-500 rounded-lg text-sm"
                 autoFocus
               />
             </div>
           ) : (
-            <div className="grid gap-2 max-w-md mx-auto">
+            <div className="grid gap-1.5 max-w-sm mx-auto">
               {currentQuestion.options?.map((option) => (
                 <Button
                   key={option.value}
                   variant="outline"
-                  className={`h-auto p-3 text-left justify-start transition-all duration-300 ${
+                  className={`h-auto p-2.5 text-left justify-start transition-all duration-300 ${
                     selectedOptions.includes(option.value)
                       ? `bg-gradient-to-r ${currentQuestion.gradient} bg-opacity-20 border-aurora-400 shadow-lg`
                       : 'hover:bg-gradient-to-r hover:from-cosmic-500/10 hover:to-aurora-500/10 hover:border-aurora-500/50'
@@ -257,7 +248,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                   onClick={() => handleOptionSelect(option.value)}
                 >
                   <div className="flex items-center gap-2 w-full">
-                    <div className="text-base">{option.emoji}</div>
+                    <div className="text-sm">{option.emoji}</div>
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-xs flex items-center gap-1">
                         {option.value}
@@ -281,7 +272,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                 <Badge
                   key={option}
                   variant="secondary"
-                  className="bg-cosmic-500/20 text-cosmic-300 border-cosmic-500/30 animate-fade-in text-xs"
+                  className="bg-cosmic-500/20 text-cosmic-300 border-cosmic-500/30 animate-fade-in text-xs px-2 py-0.5"
                 >
                   {option}
                 </Badge>
@@ -289,12 +280,12 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
             </div>
           )}
 
-          <div className="flex justify-center pt-3">
+          <div className="flex justify-center pt-2">
             <Button
               onClick={handleNext}
               disabled={!canProceed}
               size="sm"
-              className={`bg-gradient-to-r ${currentQuestion.gradient} hover:opacity-90 text-white px-6 py-2 text-sm font-semibold shadow-lg transition-all duration-300 disabled:opacity-50`}
+              className={`bg-gradient-to-r ${currentQuestion.gradient} hover:opacity-90 text-white px-5 py-2 text-sm font-semibold shadow-lg transition-all duration-300 disabled:opacity-50`}
             >
               {isLastStep ? (
                 <>
