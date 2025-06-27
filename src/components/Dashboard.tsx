@@ -71,9 +71,9 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14 mx-6 mt-6">
+      <div className="relative z-10 w-full h-[calc(100vh-5rem)]">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+          <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14 mx-6 mt-6 flex-shrink-0">
             <TabsTrigger value="chat" className="flex items-center gap-3 h-10 px-6 rounded-lg">
               <Circle className="w-4 h-4" />
               <span className="font-medium">AI Guide</span>
@@ -96,19 +96,19 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="chat" className="mt-0 h-[calc(100vh-8rem)]">
+          <TabsContent value="chat" className="mt-0 flex-1 overflow-hidden">
             <EnhancedChatInterface user={user} />
           </TabsContent>
 
-          <TabsContent value="progress" className="space-y-0 p-6">
+          <TabsContent value="progress" className="space-y-0 p-6 flex-1 overflow-auto">
             <UserProgress user={user} />
           </TabsContent>
 
-          <TabsContent value="quests" className="space-y-0 p-6">
+          <TabsContent value="quests" className="space-y-0 p-6 flex-1 overflow-auto">
             <QuestSystem user={user} />
           </TabsContent>
 
-          <TabsContent value="leaderboard" className="space-y-0 p-6">
+          <TabsContent value="leaderboard" className="space-y-0 p-6 flex-1 overflow-auto">
             <Leaderboard user={user} />
           </TabsContent>
         </Tabs>

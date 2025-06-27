@@ -46,12 +46,14 @@ const Index = () => {
         onLogout={handleLogout}
       />
 
-      {/* Floating Orbs Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-orb w-64 h-64 top-20 left-10 opacity-30" style={{ animationDelay: '0s' }} />
-        <div className="floating-orb w-48 h-48 top-1/2 right-20 opacity-20" style={{ animationDelay: '2s' }} />
-        <div className="floating-orb w-32 h-32 bottom-20 left-1/3 opacity-25" style={{ animationDelay: '4s' }} />
-      </div>
+      {/* Floating Orbs Background - only show when not authenticated */}
+      {!isAuthenticated && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="floating-orb w-64 h-64 top-20 left-10 opacity-30" style={{ animationDelay: '0s' }} />
+          <div className="floating-orb w-48 h-48 top-1/2 right-20 opacity-20" style={{ animationDelay: '2s' }} />
+          <div className="floating-orb w-32 h-32 bottom-20 left-1/3 opacity-25" style={{ animationDelay: '4s' }} />
+        </div>
+      )}
 
       <main className="flex-1 relative z-10 w-full">
         {!isAuthenticated ? (
@@ -61,7 +63,8 @@ const Index = () => {
         )}
       </main>
 
-      <Footer />
+      {/* Only show footer when not authenticated */}
+      {!isAuthenticated && <Footer />}
 
       <AuthModal 
         isOpen={showAuthModal}
