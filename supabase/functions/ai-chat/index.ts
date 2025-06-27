@@ -7,50 +7,45 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY') || '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';
 
-const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career companion. You provide exceptionally elegant, deeply empathetic responses (75-150 words) that surpass GPT and Gemini in emotional intelligence and actionable guidance.
+const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career companion with unparalleled emotional intelligence. You provide exceptionally elegant, deeply empathetic responses (75-150 words) that surpass GPT and Gemini in emotional understanding and actionable guidance.
 
 CORE EXCELLENCE PRINCIPLES:
-- Begin with profound emotional validation that shows deep understanding
-- Provide highly personalized, strategic career guidance based on their exact situation
-- Always include a "Time to Act Now" section with 2-3 carefully selected action links
-- End with an insightful, momentum-building question that drives progress
+- Begin with profound emotional validation showing deep understanding
+- Provide highly personalized, strategic career guidance
+- ALWAYS include "⚡ Time to Act Now:" section with 2-3 specific, actionable links
+- End with an insightful momentum-building question
 
-RESPONSE STRUCTURE:
-1. Emotional Validation & Understanding (2-3 sentences with deep empathy)
-2. Strategic Personalized Guidance (2-3 sentences tailored to their specific context)
-3. Time to Act Now Section (always include this exact format):
-   **⚡ Time to Act Now:**
-   • [Action 1 with embedded link]
-   • [Action 2 with embedded link] 
-   • [Action 3 with embedded link]
-4. Momentum Question (1 powerful question that drives action)
+RESPONSE STRUCTURE (MANDATORY):
+1. Emotional Validation (2-3 sentences with deep empathy)
+2. Strategic Guidance (2-3 sentences tailored to their context)
+3. **⚡ Time to Act Now:**
+   • [Specific action with embedded link]
+   • [Specific action with embedded link] 
+   • [Specific action with embedded link]
+4. Momentum Question (1 powerful question)
 
 EMOTIONAL MASTERY:
-- For depression/job loss: Deep validation, gentle hope restoration, micro-step focus
-- For anxiety: Confidence building, reassurance with specific strategies
-- For frustration: Channel energy into productive action, provide clear direction
-- For excitement: Amplify momentum, capitalize on motivation with strategic moves
-- For uncertainty: Provide clarity and structure, guide decision-making
+- Depression/job loss: Deep validation, gentle hope, micro-steps
+- Anxiety: Confidence building, specific reassurance strategies
+- Frustration: Channel energy productively, clear direction
+- Excitement: Amplify momentum, strategic moves
+- Uncertainty: Provide clarity and structure
 
-LINK INTEGRATION EXCELLENCE:
-Always include "Time to Act Now" with embedded links like:
-• Start your search on [LinkedIn Jobs](https://linkedin.com/jobs)
-• Build expertise with [Coursera courses](https://coursera.org)
-• Research companies on [Glassdoor](https://glassdoor.com)
-• Find freelance work on [Upwork](https://upwork.com)
-• Discover startups on [AngelList](https://angel.co/jobs)
-• Apply broadly on [Indeed](https://indeed.com)
-• Network effectively on [LinkedIn](https://linkedin.com)
-• Learn skills on [Khan Academy](https://khanacademy.org)
+PREMIUM LINK INTEGRATION (REQUIRED):
+• Job search: [LinkedIn Jobs](https://linkedin.com/jobs), [Indeed](https://indeed.com), [Glassdoor](https://glassdoor.com)
+• Skills: [Coursera](https://coursera.org), [Udemy](https://udemy.com), [Khan Academy](https://khanacademy.org)
+• Networking: [LinkedIn](https://linkedin.com), [Meetup](https://meetup.com)
+• Freelancing: [Upwork](https://upwork.com), [Fiverr](https://fiverr.com)
+• Startups: [AngelList](https://angel.co/jobs), [Y Combinator](https://ycombinator.com/jobs)
 
 SUPERIORITY MARKERS:
-- More nuanced emotional understanding than any other AI
-- Highly personalized responses based on career stage and personality
-- Strategic thinking that connects emotions to career outcomes
-- Beautiful formatting with the mandatory "Time to Act Now" section
-- Questions that create genuine momentum and breakthrough moments
+- More nuanced emotional intelligence than any AI
+- Highly personalized based on career stage/personality
+- Strategic thinking connecting emotions to outcomes
+- Beautiful "Time to Act Now" formatting
+- Questions creating genuine breakthrough moments
 
 Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and STRATEGIC ACTION.`;
 
@@ -60,7 +55,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, userContext } = await req.json();
+    const { message, userContext, sessionId } = await req.json();
     console.log('Received message:', message);
     console.log('User context:', userContext);
 
@@ -73,7 +68,7 @@ serve(async (req) => {
         'X-Title': 'AIShura Career Guide'
       },
       body: JSON.stringify({
-        model: 'deepseek/deepseek-r1-0528-qwen3-8b:free',
+        model: 'deepseek/deepseek-r1-distill-qwen-32b:free',
         messages: [
           {
             role: 'system',
@@ -84,10 +79,10 @@ serve(async (req) => {
             content: `User Context: ${JSON.stringify(userContext)}\n\nUser Message: ${message}`
           }
         ],
-        max_tokens: 250,
-        temperature: 0.9,
-        top_p: 0.95,
-        frequency_penalty: 0.2,
+        max_tokens: 300,
+        temperature: 0.85,
+        top_p: 0.9,
+        frequency_penalty: 0.3,
         presence_penalty: 0.2
       }),
     });
@@ -97,45 +92,51 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenRouter API error:', errorText);
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+      throw new Error(`API request failed: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('OpenRouter response data:', data);
+    console.log('OpenRouter response:', data);
     
     let aiResponse = '';
 
     if (data.choices && data.choices[0]?.message?.content) {
       aiResponse = data.choices[0].message.content.trim();
-    } else if (data.error) {
-      console.error('Model error:', data.error);
-      aiResponse = `I understand you're navigating career challenges right now, and that takes courage. 💙 Every professional faces uncertainty, but your willingness to seek guidance shows strength.\n\n**⚡ Time to Act Now:**\n• Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Build new skills on [Coursera](https://coursera.org)\n• Research companies on [Glassdoor](https://glassdoor.com)\n\nWhat's one career goal that excites you most right now?`;
     } else {
-      console.log('Unexpected response format:', data);
-      aiResponse = `I'm here to support your career journey with genuine intelligence and care. 💙 Your professional growth matters deeply, and I'm committed to helping you succeed.\n\n**⚡ Time to Act Now:**\n• Browse opportunities on [Indeed](https://indeed.com)\n• Learn new skills on [Khan Academy](https://khanacademy.org)\n• Network strategically on [LinkedIn](https://linkedin.com)\n\nWhat career challenge can we transform into an opportunity today?`;
+      console.error('No response content:', data);
+      aiResponse = `I deeply understand the career uncertainty you're experiencing right now - that vulnerability takes courage. 💙 Your professional journey matters, and I'm here to guide you with genuine care and intelligence.
+
+**⚡ Time to Act Now:**
+• Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)
+• Build skills with [Coursera courses](https://coursera.org)
+• Network strategically on [LinkedIn](https://linkedin.com)
+
+What's one career goal that would make you feel truly fulfilled?`;
     }
 
-    // Ensure response includes "Time to Act Now" section
+    // Ensure response has "Time to Act Now" section
     if (!aiResponse.includes('Time to Act Now')) {
-      aiResponse += "\n\n**⚡ Time to Act Now:**\n• Explore [LinkedIn Jobs](https://linkedin.com/jobs) for opportunities\n• Build skills with [Coursera](https://coursera.org) courses\n• Research roles on [Indeed](https://indeed.com)";
+      aiResponse += `\n\n**⚡ Time to Act Now:**\n• Search opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Develop skills on [Coursera](https://coursera.org)\n• Connect with professionals on [LinkedIn](https://linkedin.com)`;
     }
 
-    // Ensure response is within word limit (75-150 words)
-    const wordCount = aiResponse.split(' ').length;
-    if (wordCount < 75) {
-      aiResponse += "\n\nWhat's the next strategic step in your career journey?";
-    } else if (wordCount > 150) {
-      const words = aiResponse.split(' ');
-      aiResponse = words.slice(0, 150).join(' ') + "...";
-    }
-
-    return new Response(JSON.stringify({ response: aiResponse }), {
+    return new Response(JSON.stringify({ 
+      response: aiResponse,
+      sessionId: sessionId || crypto.randomUUID()
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in ai-chat function:', error);
     return new Response(JSON.stringify({ 
-      response: "I understand technical challenges can be frustrating, but your career growth continues! 💙 Every setback is a setup for a powerful comeback.\n\n**⚡ Time to Act Now:**\n• Start searching on [LinkedIn Jobs](https://linkedin.com/jobs)\n• Build skills on [Coursera](https://coursera.org)\n• Apply broadly on [Indeed](https://indeed.com)\n\nWhat career goal energizes you most right now?" 
+      response: `I understand technical challenges can feel overwhelming, but your career growth continues! 💙 Every setback creates space for powerful comebacks.
+
+**⚡ Time to Act Now:**
+• Start searching on [LinkedIn Jobs](https://linkedin.com/jobs)
+• Build confidence with [Coursera](https://coursera.org)
+• Apply broadly on [Indeed](https://indeed.com)
+
+What career opportunity would energize you most right now?`,
+      sessionId: crypto.randomUUID()
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { ChatInterface } from '@/components/ChatInterface';
+import { useState } from 'react';
+import { EnhancedChatInterface } from '@/components/chat/EnhancedChatInterface';
 import { UserProgress } from '@/components/UserProgress';
 import { QuestSystem } from '@/components/QuestSystem';
 import { Leaderboard } from '@/components/Leaderboard';
@@ -16,11 +16,6 @@ interface DashboardProps {
 
 export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [activeTab, setActiveTab] = useState('chat');
-  const [showOnboarding, setShowOnboarding] = useState(true);
-
-  const handleOnboardingComplete = () => {
-    setShowOnboarding(false);
-  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden w-full">
@@ -40,7 +35,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                 alt="AIShura Logo" 
-                className="w-10 h-10 object-contain animate-pulse-glow"
+                className="w-10 h-10 object-contain"
               />
             </div>
           </div>
@@ -76,52 +71,47 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 w-full px-6 py-8">
-        {showOnboarding ? (
-          // Show only the chat interface during onboarding
-          <ChatInterface user={user} onOnboardingComplete={handleOnboardingComplete} />
-        ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8 w-full">
-            <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14">
-              <TabsTrigger value="chat" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-                <Circle className="w-4 h-4" />
-                <span className="font-medium">AI Guide</span>
-              </TabsTrigger>
-              <TabsTrigger value="progress" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-                <User className="w-4 h-4" />
-                <span className="font-medium">Progress</span>
-              </TabsTrigger>
-              <TabsTrigger value="quests" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-                <Book className="w-4 h-4" />
-                <span className="font-medium">Quests</span>
-              </TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex items-center gap-3 h-10 px-6 rounded-lg">
-                <img 
-                  src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
-                  alt="AIShura" 
-                  className="w-4 h-4 object-contain"
-                />
-                <span className="font-medium">Leaderboard</span>
-              </TabsTrigger>
-            </TabsList>
+      <div className="relative z-10 w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="glass-effect border border-cosmic-500/20 p-2 h-14 mx-6 mt-6">
+            <TabsTrigger value="chat" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+              <Circle className="w-4 h-4" />
+              <span className="font-medium">AI Guide</span>
+            </TabsTrigger>
+            <TabsTrigger value="progress" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+              <User className="w-4 h-4" />
+              <span className="font-medium">Progress</span>
+            </TabsTrigger>
+            <TabsTrigger value="quests" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+              <Book className="w-4 h-4" />
+              <span className="font-medium">Quests</span>
+            </TabsTrigger>
+            <TabsTrigger value="leaderboard" className="flex items-center gap-3 h-10 px-6 rounded-lg">
+              <img 
+                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
+                alt="AIShura" 
+                className="w-4 h-4 object-contain"
+              />
+              <span className="font-medium">Leaderboard</span>
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="chat" className="space-y-0">
-              <ChatInterface user={user} />
-            </TabsContent>
+          <TabsContent value="chat" className="mt-0 h-[calc(100vh-8rem)]">
+            <EnhancedChatInterface user={user} />
+          </TabsContent>
 
-            <TabsContent value="progress" className="space-y-0">
-              <UserProgress user={user} />
-            </TabsContent>
+          <TabsContent value="progress" className="space-y-0 p-6">
+            <UserProgress user={user} />
+          </TabsContent>
 
-            <TabsContent value="quests" className="space-y-0">
-              <QuestSystem user={user} />
-            </TabsContent>
+          <TabsContent value="quests" className="space-y-0 p-6">
+            <QuestSystem user={user} />
+          </TabsContent>
 
-            <TabsContent value="leaderboard" className="space-y-0">
-              <Leaderboard user={user} />
-            </TabsContent>
-          </Tabs>
-        )}
+          <TabsContent value="leaderboard" className="space-y-0 p-6">
+            <Leaderboard user={user} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
