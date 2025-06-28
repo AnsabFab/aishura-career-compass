@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { User, Star } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -14,49 +16,147 @@ interface AuthModalProps {
 
 export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
     confirmPassword: ''
   });
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Simple validation
     if (!formData.email || !formData.password) {
-      alert('Please fill in all required fields');
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
       return;
     }
 
     if (isSignUp && formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      toast({
+        title: "Error", 
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
       return;
     }
 
-    // Check for stored career goal
-    const storedGoal = localStorage.getItem('career_goal');
+    setLoading(true);
 
-    // Mock user data for demo
-    const userData = {
-      id: Math.random().toString(36).substr(2, 9),
-      email: formData.email,
-      name: isSignUp ? formData.name : formData.email.split('@')[0],
-      trustScore: 25,
-      level: 1,
-      xp: 0,
-      tokens: 100,
-      joinDate: new Date().toISOString(),
-      avatar: 'career-starter',
-      careerGoal: storedGoal || ''
-    };
+    try {
+      if (isSignUp) {
+        // Sign up new user
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              name: formData.name
+            }
+          }
+        });
 
-    onLogin(userData);
-    
-    // Clear the stored goal
-    if (storedGoal) {
-      localStorage.removeItem('career_goal');
+        if (error) {
+          toast({
+            title: "Sign Up Error",
+            description: error.message,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (data.user) {
+          // Check for stored career goal
+          const storedGoal = localStorage.getItem('career_goal');
+          
+          // Create user data object
+          const userData = {
+            id: data.user.id,
+            email: data.user.email,
+            name: formData.name || data.user.email?.split('@')[0],
+            trustScore: 25,
+            level: 1,
+            xp: 0,
+            tokens: 100,
+            joinDate: new Date().toISOString(),
+            avatar: 'career-starter',
+            careerGoal: storedGoal || ''
+          };
+
+          onLogin(userData);
+          
+          // Clear the stored goal
+          if (storedGoal) {
+            localStorage.removeItem('career_goal');
+          }
+
+          toast({
+            title: "Success",
+            description: "Account created successfully! Please check your email to verify your account.",
+          });
+        }
+      } else {
+        // Sign in existing user
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (error) {
+          toast({
+            title: "Sign In Error",
+            description: error.message,
+            variant: "destructive"
+          });
+          return;
+        }
+
+        if (data.user) {
+          // Check for stored career goal
+          const storedGoal = localStorage.getItem('career_goal');
+          
+          // Create user data object
+          const userData = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.name || data.user.email?.split('@')[0],
+            trustScore: 25,
+            level: 1,
+            xp: 0,
+            tokens: 100,
+            joinDate: new Date().toISOString(),
+            avatar: 'career-starter',
+            careerGoal: storedGoal || ''
+          };
+
+          onLogin(userData);
+          
+          // Clear the stored goal
+          if (storedGoal) {
+            localStorage.removeItem('career_goal');
+          }
+
+          toast({
+            title: "Success",
+            description: "Signed in successfully!",
+          });
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,9 +249,10 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
 
           <Button
             type="submit"
+            disabled={loading}
             className="w-full bg-cosmic-600 hover:bg-cosmic-700 text-white py-3 rounded-xl animate-pulse-glow"
           >
-            {isSignUp ? 'Create Account' : 'Sign In'}
+            {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
           </Button>
 
           <div className="text-center">
