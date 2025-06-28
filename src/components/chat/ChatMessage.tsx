@@ -1,7 +1,6 @@
-
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { User, Copy, ExternalLink, Zap } from 'lucide-react';
+import { User, Copy, ExternalLink, Zap, Globe } from 'lucide-react';
 
 interface ChatMessageProps {
   content: string;
@@ -16,7 +15,6 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
   };
 
   const renderContent = (text: string) => {
-    // Split content into sections
     const timeToActMatch = text.match(/⚡ Time to Act Now:\s*([\s\S]*?)(?=\n\n|\n*$)/);
     const beforeTimeToAct = timeToActMatch ? text.substring(0, timeToActMatch.index) : text;
     const timeToActContent = timeToActMatch ? timeToActMatch[1] : '';
@@ -28,7 +26,6 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
       
       return parts.map((part, index) => {
         if (index % 3 === 1) {
-          // This is link text
           const url = parts[index + 1];
           return (
             <a
@@ -36,14 +33,13 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-cosmic-500/20 to-aurora-500/20 border border-cosmic-500/30 rounded-lg text-cosmic-300 hover:from-cosmic-500/30 hover:to-aurora-500/30 hover:border-cosmic-400 transition-all duration-200 font-medium"
+              className="inline-flex items-center gap-1 px-3 py-1 ai-glass-effect border border-purple-400/30 rounded-lg text-purple-300 hover:border-purple-300 transition-all duration-200 font-medium text-sm mx-1"
             >
               {part}
               <ExternalLink className="w-3 h-3" />
             </a>
           );
         } else if (index % 3 === 2) {
-          // This is the URL, skip it as we've already used it
           return null;
         }
         
@@ -52,48 +48,58 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
     };
 
     const renderTimeToActAction = (content: string) => {
-      // Extract the main action text and URL
       const urlRegex = /(https?:\/\/[^\s]+)/;
       const urlMatch = content.match(urlRegex);
       
       if (!urlMatch) {
-        return <div className="text-sm">{content.replace('•', '').trim()}</div>;
+        return <div className="text-sm text-gray-300">{content.replace('•', '').trim()}</div>;
       }
 
       const url = urlMatch[1];
       const actionText = content.replace(urlRegex, '').replace('•', '').trim();
       
-      // Generate action button text based on content
       let buttonText = "Take Action";
-      if (actionText.toLowerCase().includes('job') || actionText.toLowerCase().includes('opportunit')) {
+      let buttonIcon = Globe;
+      
+      if (actionText.toLowerCase().includes('interview') || actionText.toLowerCase().includes('prep')) {
+        buttonText = "Prepare Now";
+        buttonIcon = Zap;
+      } else if (actionText.toLowerCase().includes('job') || actionText.toLowerCase().includes('opportunit')) {
         buttonText = "Find Jobs";
-      } else if (actionText.toLowerCase().includes('skill') || actionText.toLowerCase().includes('course')) {
+        buttonIcon = Globe;
+      } else if (actionText.toLowerCase().includes('skill') || actionText.toLowerCase().includes('course') || actionText.toLowerCase().includes('learn')) {
         buttonText = "Learn Skills";
+        buttonIcon = Zap;
       } else if (actionText.toLowerCase().includes('network') || actionText.toLowerCase().includes('connect')) {
         buttonText = "Network Now";
+        buttonIcon = Globe;
       } else if (actionText.toLowerCase().includes('research') || actionText.toLowerCase().includes('explore')) {
         buttonText = "Explore Now";
+        buttonIcon = Globe;
       }
 
+      const ButtonIcon = buttonIcon;
+
       return (
-        <div className="bg-gradient-to-r from-cosmic-500/10 to-aurora-500/10 border border-cosmic-500/20 rounded-xl p-4 hover:from-cosmic-500/15 hover:to-aurora-500/15 transition-all duration-300">
+        <div className="ai-glass-effect border border-purple-400/30 rounded-2xl p-5 hover:border-purple-300/40 transition-all duration-300 ai-card-hover">
           <div className="flex items-center justify-between">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-foreground mb-1">
+              <p className="text-white font-medium mb-2 leading-relaxed">
                 {actionText}
               </p>
-              <p className="text-xs text-muted-foreground">
-                🎯 Found 10+ opportunities on job boards. Check the link for current openings.
+              <p className="text-xs text-gray-400 flex items-center gap-2">
+                <div className="w-2 h-2 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full animate-pulse"></div>
+                Ready to take action • Contextually matched for you
               </p>
             </div>
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cosmic-600 to-aurora-600 hover:from-cosmic-700 hover:to-aurora-700 text-white rounded-lg transition-all duration-200 font-medium text-sm whitespace-nowrap"
+              className="flex items-center gap-2 ai-button-glow px-5 py-3 text-white rounded-xl transition-all duration-200 font-medium text-sm whitespace-nowrap"
             >
+              <ButtonIcon className="w-4 h-4" />
               {buttonText}
-              <ExternalLink className="w-4 h-4" />
             </a>
           </div>
         </div>
@@ -101,20 +107,20 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
     };
 
     return (
-      <div className="space-y-4">
-        {/* Main content before Time to Act Now */}
+      <div className="space-y-5">
         {beforeTimeToAct && (
-          <div className="whitespace-pre-wrap leading-relaxed text-base">
+          <div className="whitespace-pre-wrap leading-relaxed text-base text-gray-200">
             {renderTextWithLinks(beforeTimeToAct)}
           </div>
         )}
 
-        {/* Time to Act Now section */}
         {timeToActContent && (
-          <div className="mt-6 p-4 bg-gradient-to-r from-neon-500/10 to-aurora-500/10 border border-neon-500/30 rounded-xl">
+          <div className="mt-6">
             <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-neon-300 animate-pulse" />
-              <span className="font-bold text-neon-300 text-lg">Time to Act Now</span>
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white animate-pulse" />
+              </div>
+              <span className="font-bold ai-glow-text text-lg font-orbitron">Time to Act Now</span>
             </div>
             <div className="space-y-3">
               {renderTimeToActAction(timeToActContent)}
@@ -122,9 +128,8 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
           </div>
         )}
 
-        {/* Content after Time to Act Now */}
         {afterTimeToAct && (
-          <div className="whitespace-pre-wrap leading-relaxed text-base">
+          <div className="whitespace-pre-wrap leading-relaxed text-base text-gray-200">
             {renderTextWithLinks(afterTimeToAct)}
           </div>
         )}
@@ -133,9 +138,9 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
   };
 
   return (
-    <div className={`flex items-start gap-4 ${sender === 'user' ? 'flex-row-reverse' : ''} group`}>
-      <Avatar className="w-12 h-12 border-2 border-cosmic-500/30">
-        <AvatarFallback className={sender === 'user' ? 'bg-neon-500/20 text-neon-300' : 'bg-cosmic-500/20 text-cosmic-300'}>
+    <div className={`flex items-start gap-4 ${sender === 'user' ? 'flex-row-reverse' : ''} group animate-fade-in-up`}>
+      <Avatar className="w-12 h-12 border-2 border-purple-400/30 ai-glass-effect">
+        <AvatarFallback className={sender === 'user' ? 'bg-blue-500/20 text-blue-300' : 'bg-purple-500/20 text-purple-300'}>
           {sender === 'user' ? (
             <User className="w-6 h-6" />
           ) : (
@@ -148,30 +153,29 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
         </AvatarFallback>
       </Avatar>
       
-      <div className={`max-w-[80%] ${sender === 'user' ? 'text-right' : ''}`}>
+      <div className={`max-w-[85%] ${sender === 'user' ? 'text-right' : ''}`}>
         <div
-          className={`p-5 rounded-2xl leading-relaxed text-base ${
+          className={`p-6 rounded-2xl leading-relaxed text-base relative overflow-hidden ${
             sender === 'user'
-              ? 'bg-gradient-to-br from-neon-500/15 to-neon-600/10 border border-neon-500/30'
+              ? 'ai-glass-effect border border-blue-400/30 bg-gradient-to-br from-blue-500/10 to-cyan-500/5'
               : isNudge
-              ? 'bg-gradient-to-br from-aurora-500/15 to-aurora-600/10 border border-aurora-500/30'
-              : 'bg-gradient-to-br from-cosmic-500/15 to-cosmic-600/10 border border-cosmic-500/30'
-          } backdrop-blur-sm shadow-lg relative`}
+              ? 'ai-glass-effect border border-purple-400/30 bg-gradient-to-br from-purple-500/10 to-pink-500/5'
+              : 'ai-message-bubble border border-purple-400/30 bg-gradient-to-br from-purple-500/10 to-blue-500/5'
+          } backdrop-blur-xl shadow-2xl ai-card-hover`}
         >
           {renderContent(content)}
           
-          {/* Copy button */}
           <Button
             size="sm"
             variant="ghost"
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 p-0"
+            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 p-0 hover:bg-white/10"
             onClick={copyToClipboard}
           >
-            <Copy className="w-3 h-3" />
+            <Copy className="w-3 h-3 text-gray-400" />
           </Button>
         </div>
         
-        <p className="text-xs text-muted-foreground/60 mt-2 px-2">
+        <p className="text-xs text-gray-500 mt-3 px-2">
           {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>

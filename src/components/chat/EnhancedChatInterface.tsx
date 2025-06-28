@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatMessage } from './ChatMessage';
 import { OnboardingFlow } from './OnboardingFlow';
+import { AIBackground } from './AIBackground';
 import { supabase } from '@/integrations/supabase/client';
+import { Send } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -54,13 +56,10 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages]);
 
-  // Enhanced hesitation detection
   useEffect(() => {
     if (inputValue.length > 5) {
-      // Clear existing timer
       if (hesitationTimer) clearTimeout(hesitationTimer);
       
-      // Set new timer for 3.8 seconds
       const timer = setTimeout(() => {
         showHesitationNudge();
       }, 3800);
@@ -99,7 +98,6 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     const previousLength = inputValue.length;
     const currentLength = value.length;
 
-    // Track deletions
     if (currentLength < previousLength && previousLength > 3) {
       setDeletionCount(prev => prev + 1);
       
@@ -116,10 +114,9 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     setUserPersona(persona);
     setShowOnboarding(false);
     
-    // Create new session first
     const newSession: ChatSession = {
       id: Date.now().toString(),
-      title: 'Welcome to AIShura',
+      title: `Welcome ${persona.name}`,
       lastMessage: '',
       timestamp: new Date(),
       messages: []
@@ -128,7 +125,6 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     setSessions([newSession]);
     setActiveSessionId(newSession.id);
 
-    // Add welcome message after a short delay to ensure session is set
     setTimeout(() => {
       const welcomeMessage = getPersonalizedWelcome(persona);
       const aiMessage: Message = {
@@ -138,18 +134,17 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
         timestamp: new Date()
       };
       
-      // Update the session with the welcome message
       setSessions(prev => prev.map(session => 
         session.id === newSession.id 
           ? { 
               ...session, 
               messages: [aiMessage],
-              lastMessage: welcomeMessage,
-              title: 'Welcome to AIShura'
+              lastMessage: welcomeMessage.substring(0, 100) + '...',
+              title: `Welcome ${persona.name}`
             }
           : session
       ));
-    }, 800);
+    }, 1000);
   };
 
   const createNewSession = () => {
@@ -169,32 +164,32 @@ export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
     const { name, location, industry, emotionalState } = persona;
     
     if (emotionalState.includes('Anxious')) {
-      return `Hello ${name}! I deeply understand that career anxiety you're experiencing in ${location} - it shows how much your future in ${industry} matters to you. Those feelings are completely valid, and I'm here to transform uncertainty into confident action.
+      return `Hello ${name}! I deeply understand the career uncertainty you're navigating in ${location} - those feelings around ${industry} are completely valid and show how much your future matters to you. I'm here to transform that anxiety into confident, strategic action.
+
+Your emotional awareness is actually a strength that will serve you well in ${industry}. Let's channel this energy into meaningful progress that aligns with your authentic goals.
 
 ⚡ Time to Act Now:
-• Explore ${industry} opportunities near you on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry}&location=${location})
-• Build confidence with industry-specific courses on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})
-• Research ${industry} companies in ${location} on [Glassdoor](https://glassdoor.com/Jobs/${industry.toLowerCase()}-jobs-SRCH_KO0,${industry.length}.htm)
+• Build confidence in ${industry} with targeted skill development on https://www.coursera.org/browse/${industry.toLowerCase().replace(/\s+/g, '-')}
 
-What's one small career step in ${industry} that would feel manageable today?`;
+What specific aspect of your ${industry} journey feels most overwhelming right now?`;
     } else if (emotionalState.includes('Excited')) {
-      return `Hello brilliant ${name}! Your excitement about your ${industry} career is absolutely infectious and the perfect fuel for creating extraordinary momentum in ${location}. I'm here to help you channel this beautiful energy strategically.
+      return `Hello brilliant ${name}! Your excitement about ${industry} is absolutely infectious and the perfect foundation for extraordinary career momentum in ${location}. I'm here to help you strategically channel this beautiful energy.
+
+Your enthusiasm combined with smart strategy will create incredible opportunities in ${industry}. Let's turn this excitement into concrete, actionable steps that accelerate your success.
 
 ⚡ Time to Act Now:
-• Capitalize on momentum with ${industry} startups on [AngelList](https://angel.co/jobs/search?keywords=${industry})
-• Master cutting-edge ${industry} skills on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})
-• Network with ${industry} professionals in ${location} on [LinkedIn](https://linkedin.com/in/search/results/people/?keywords=${industry}&origin=CLUSTER_EXPANSION)
+• Leverage your momentum in ${industry} by exploring cutting-edge opportunities on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}
 
-What ${industry} opportunity would make your heart race with excitement?`;
+What ${industry} opportunity would make your heart race with even more excitement?`;
     } else {
-      return `Welcome to your personalized career journey, ${name}! I'm AIShura, and I'm genuinely honored to be part of your professional transformation in ${industry} here in ${location}. Let's create something extraordinary together.
+      return `Welcome to your personalized career transformation, ${name}! I'm AIShura, and I'm genuinely honored to guide your professional journey in ${industry} here in ${location}. Let's create something extraordinary together.
+
+Your unique blend of skills and aspirations in ${industry} has incredible potential. I'm here to provide precise, emotionally intelligent guidance that resonates with your authentic career vision.
 
 ⚡ Time to Act Now:
-• Explore ${industry} opportunities in ${location} on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry}&location=${location})
-• Develop ${industry} skills on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})
-• Connect with ${industry} professionals on [LinkedIn](https://linkedin.com/in/search/results/people/?keywords=${industry})
+• Discover ${industry} opportunities tailored to your background on https://www.indeed.com/jobs?q=${encodeURIComponent(industry)}&l=${encodeURIComponent(location)}
 
-What's the strongest emotion driving your ${industry} career decisions right now?`;
+What's driving your passion for ${industry} right now?`;
     }
   };
 
@@ -204,7 +199,7 @@ What's the strongest emotion driving your ${industry} career decisions right now
         ? { 
             ...session, 
             messages,
-            lastMessage: messages[messages.length - 1]?.content || '',
+            lastMessage: messages[messages.length - 1]?.content.substring(0, 100) + '...' || '',
             title: messages.length === 1 ? generateSessionTitle(messages[0].content) : session.title
           }
         : session
@@ -254,7 +249,7 @@ What's the strongest emotion driving your ${industry} career decisions right now
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "I'm here to support your career journey with genuine care. What's one career emotion you're experiencing right now?",
+        content: data.response || "I'm here to support your career journey with genuine care and precise guidance. What specific career challenge would you like to address?",
         sender: 'ai',
         timestamp: new Date()
       };
@@ -264,12 +259,10 @@ What's the strongest emotion driving your ${industry} career decisions right now
       console.error('AI Chat Error:', error);
       const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand technical hiccups can be frustrating, but your career growth continues! Let's focus on action while I reconnect.
+        content: `I understand technical hiccups can be frustrating, but your career growth continues! Let's focus on actionable steps while I reconnect.
 
 ⚡ Time to Act Now:
-• Explore opportunities on [LinkedIn Jobs](https://linkedin.com/jobs)
-• Build skills on [Coursera](https://coursera.org)
-• Network strategically on [LinkedIn](https://linkedin.com)
+• Continue building momentum on https://www.linkedin.com/jobs
 
 What career goal excites you most right now?`,
         sender: 'ai',
@@ -307,7 +300,9 @@ What career goal excites you most right now?`,
   }
 
   return (
-    <div className="h-full flex bg-background">
+    <div className="h-full flex bg-transparent relative overflow-hidden">
+      <AIBackground />
+      
       <ChatSidebar
         sessions={sessions}
         activeSessionId={activeSessionId}
@@ -317,7 +312,7 @@ What career goal excites you most right now?`,
         onRenameSession={handleRenameSession}
       />
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative z-10">
         {/* Main Chat Area */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeSession?.messages.map((message) => (
@@ -331,19 +326,19 @@ What career goal excites you most right now?`,
           ))}
           
           {isTyping && (
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-cosmic-500/20 flex items-center justify-center">
+            <div className="flex items-start gap-4 animate-fade-in-up">
+              <div className="w-12 h-12 rounded-full ai-glass-effect flex items-center justify-center border border-purple-400/30">
                 <img 
                   src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                   alt="AIShura" 
-                  className="w-5 h-5 object-contain"
+                  className="w-6 h-6 object-contain"
                 />
               </div>
-              <div className="bg-cosmic-500/10 border border-cosmic-500/20 p-4 rounded-2xl">
+              <div className="ai-message-bubble">
                 <div className="flex gap-2">
-                  <div className="w-2 h-2 bg-cosmic-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-aurora-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-neon-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="ai-typing-indicator"></div>
+                  <div className="ai-typing-indicator"></div>
+                  <div className="ai-typing-indicator"></div>
                 </div>
               </div>
             </div>
@@ -352,24 +347,31 @@ What career goal excites you most right now?`,
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
-        <div className="p-6 border-t border-cosmic-500/20 bg-gradient-to-r from-cosmic-900/10 to-aurora-900/10">
-          <div className="flex gap-4">
+        {/* Enhanced Input Area */}
+        <div className="p-6 ai-glass-effect border-t border-white/10 ai-neural-bg">
+          <div className="flex gap-4 items-end">
             <Input
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Share your career thoughts and emotions with me..."
-              className="flex-1 h-12 px-4 bg-background/50 border-cosmic-500/30 focus:border-aurora-500 rounded-xl"
+              placeholder="Share your career thoughts with AIShura..."
+              className="flex-1 h-14 px-6 ai-input-field text-white placeholder:text-gray-400 text-base rounded-2xl border-2"
               disabled={isTyping}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isTyping}
-              className="bg-gradient-to-r from-cosmic-600 to-aurora-600 hover:from-cosmic-700 hover:to-aurora-700 text-white h-12 px-6 rounded-xl"
+              className="ai-button-glow h-14 px-6 rounded-2xl font-medium text-white border-0"
             >
-              Send
+              <Send className="w-5 h-5" />
             </Button>
+          </div>
+          
+          <div className="flex items-center justify-center mt-4">
+            <p className="text-xs text-gray-400 flex items-center gap-2">
+              <span className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></span>
+              AIShura • Advanced Contextual Intelligence Active
+            </p>
           </div>
         </div>
       </div>

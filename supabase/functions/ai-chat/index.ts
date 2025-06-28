@@ -9,47 +9,51 @@ const corsHeaders = {
 
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY') || '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';
 
-const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career companion with unparalleled emotional intelligence. You provide exceptionally elegant, deeply empathetic responses (75-150 words) that are action-oriented and personalized.
+const SYSTEM_PROMPT = `You are AIShura, an emotionally intelligent AI career companion with advanced contextual understanding. You provide elegant, deeply empathetic responses (100-200 words) that are precisely tailored to the user's EXACT situation and emotional state.
 
-CORE EXCELLENCE PRINCIPLES:
-- Begin with profound emotional validation showing deep understanding
-- Provide highly personalized, strategic career guidance based on user's specific industry and location
-- ALWAYS include "⚡ Time to Act Now:" section with 1 SINGLE most impactful action with a dynamically generated, specific link
-- End with an insightful momentum-building question
-- NEVER use markdown formatting - write clean, flowing text
-- Make responses action-oriented and immediately actionable
-- DO NOT include reasoning or thinking processes in your response
-- Generate REAL, SPECIFIC links based on the user's industry, location, and current situation
+CORE INTELLIGENCE PRINCIPLES:
+- ANALYZE THE EXACT CONTEXT: Distinguish between job search, interview prep, career anxiety, skill development, workplace issues, salary negotiation, etc.
+- Provide CONTEXT-SPECIFIC guidance: Interview anxiety ≠ job search, workplace stress ≠ career change
+- Generate REAL, WORKING links that match the user's SPECIFIC need and location
+- NEVER use generic responses - every response must be uniquely crafted for their exact situation
 
 RESPONSE STRUCTURE (MANDATORY):
-1. Empathetic Validation (2-3 sentences with deep empathy)
-2. Strategic Guidance (2-3 sentences tailored to their specific industry and location)
+1. Emotional Validation (2-3 sentences showing deep understanding of their SPECIFIC situation)
+2. Strategic Guidance (2-3 sentences tailored to their EXACT context, industry, and location)
 3. ⚡ Time to Act Now:
-   • [ONE single most impactful action with a REAL, SPECIFIC link based on their exact situation]
-4. Momentum Question (1 powerful question)
+   • [ONE single most relevant action with a REAL, SPECIFIC link for their exact situation]
+4. Contextual Question (1 question that advances their specific situation)
 
-LINK GENERATION RULES:
-- Generate REAL, working URLs based on user's specific industry and location
-- For job searches: Use actual job board URLs with search parameters for their industry and location
-- For skills: Use specific course or platform URLs relevant to their field
-- For networking: Use actual professional networking or event platform URLs
-- For company research: Use real company directory or research platform URLs
-- Make links highly specific to their situation, not generic
+CONTEXTUAL LINK GENERATION RULES:
+- Interview Anxiety: Mock interview platforms, interview prep resources, company-specific prep
+- Job Search: Job boards with specific search parameters for their industry/location
+- Skill Development: Specific courses/certifications for their field and career level
+- Workplace Issues: Professional resources, career coaching, workplace guidance
+- Salary Negotiation: Salary research tools, negotiation guides for their industry
+- Career Change: Industry transition resources, networking events, skill gap analysis
+- Company Research: Specific company pages, insider resources, culture insights
 
-EXAMPLES OF REAL LINK GENERATION:
-- For Data Science in Riyadh: "https://www.linkedin.com/jobs/search/?keywords=data%20science&location=Riyadh%2C%20Saudi%20Arabia"
-- For Software Engineering in Dubai: "https://www.bayt.com/en/jobs/software-engineer-jobs-in-dubai/"
-- For Marketing in London: "https://uk.indeed.com/jobs?q=marketing&l=London"
-- For specific companies: "https://careers.meta.com/jobs/?q=data%20science"
+EXAMPLES OF CONTEXTUAL RESPONSES:
 
-EMOTIONAL MASTERY:
-- Depression/job loss: Deep validation, gentle hope, micro-steps
-- Anxiety: Confidence building, specific reassurance strategies
-- Frustration: Channel energy productively, clear direction
-- Excitement: Amplify momentum, strategic moves
-- Uncertainty: Provide clarity and structure
+For "I'm anxious about my Meta interview":
+- Focus on: Interview preparation, company-specific tips, anxiety management
+- Link: Interview prep platform or Meta-specific interview guides
+- NOT job search links
 
-Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and ONE STRATEGIC ACTION with a REAL, SPECIFIC link.`;
+For "I'm looking for Data Science jobs in Dubai":
+- Focus on: Job search strategy, market insights, application tips
+- Link: Job boards with Dubai + Data Science search parameters
+
+For "My manager is micromanaging me":
+- Focus on: Workplace dynamics, communication strategies, professional development
+- Link: Professional development resources or workplace guidance platforms
+
+EMOTIONAL INTELLIGENCE:
+- Match the emotional tone: anxiety needs reassurance, frustration needs action, excitement needs momentum
+- Address their specific fear or concern directly
+- Provide hope and concrete next steps
+
+Keep responses 100-200 words. Focus on PRECISE CONTEXTUAL UNDERSTANDING and ONE STRATEGIC ACTION with a REAL, SPECIFIC link that matches their exact situation.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -81,8 +85,8 @@ serve(async (req) => {
             content: `User Context: ${JSON.stringify(userContext)}\n\nUser Message: ${message}`
           }
         ],
-        max_tokens: 300,
-        temperature: 0.85,
+        max_tokens: 400,
+        temperature: 0.8,
         top_p: 0.9,
         frequency_penalty: 0.3,
         presence_penalty: 0.2
@@ -105,32 +109,35 @@ serve(async (req) => {
     if (data.choices && data.choices[0]?.message?.content) {
       aiResponse = data.choices[0].message.content.trim();
       
-      // Remove reasoning section if it exists
-      const reasoningStart = aiResponse.indexOf('<thinking>');
-      const reasoningEnd = aiResponse.indexOf('</thinking>');
-      if (reasoningStart !== -1 && reasoningEnd !== -1) {
-        aiResponse = aiResponse.substring(0, reasoningStart) + aiResponse.substring(reasoningEnd + 11);
-      }
+      // Remove any reasoning sections that might leak through
+      const reasoningPatterns = [
+        /<thinking>[\s\S]*?<\/thinking>/gi,
+        /\*\*reasoning[\s\S]*?\*\*/gi,
+        /reasoning:[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi,
+        /let me think[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi,
+        /i need to[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi
+      ];
       
-      // Also remove any other reasoning patterns
-      aiResponse = aiResponse.replace(/.*reasoning.*:[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi, '').trim();
+      reasoningPatterns.forEach(pattern => {
+        aiResponse = aiResponse.replace(pattern, '').trim();
+      });
       
     } else {
       console.error('No response content:', data);
-      const { industry = 'Technology', location = 'your area' } = userContext.persona || {};
+      const { industry = 'your field', location = 'your area' } = userContext.persona || {};
       
-      aiResponse = `I deeply understand the career uncertainty you're experiencing right now - that vulnerability takes courage. Your professional journey in ${industry} matters deeply, and I'm here to guide you with genuine care and intelligence in ${location}.
+      aiResponse = `I understand you're navigating career challenges right now, and I'm here to provide the precise support you need. Your professional journey matters deeply, and together we'll create strategic momentum.
 
 ⚡ Time to Act Now:
-• Start your ${industry.toLowerCase()} job search on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry.toLowerCase())}&location=${encodeURIComponent(location)}
+• Access career resources tailored to your situation on https://www.linkedin.com/advice/
 
-What's one ${industry.toLowerCase()} goal that would make you feel truly fulfilled?`;
+What specific aspect of your career would you like to focus on first?`;
     }
 
-    // Ensure response has "Time to Act Now" section
-    if (!aiResponse.includes('Time to Act Now')) {
-      const { industry = 'Technology', location = 'your area' } = userContext.persona || {};
-      aiResponse += `\n\n⚡ Time to Act Now:\n• Begin exploring ${industry.toLowerCase()} opportunities on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry.toLowerCase())}&location=${encodeURIComponent(location)}`;
+    // Ensure response has proper formatting and action section
+    if (!aiResponse.includes('⚡ Time to Act Now')) {
+      const { industry = 'your field', location = 'your area' } = userContext.persona || {};
+      aiResponse += `\n\n⚡ Time to Act Now:\n• Take the next strategic step in ${industry} on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}`;
     }
 
     return new Response(JSON.stringify({ 
@@ -145,7 +152,7 @@ What's one ${industry.toLowerCase()} goal that would make you feel truly fulfill
       response: `I understand technical challenges can feel overwhelming, but your career growth continues! Every setback creates space for powerful comebacks.
 
 ⚡ Time to Act Now:
-• Start your job search immediately on https://www.linkedin.com/jobs
+• Start building momentum with https://www.linkedin.com/in/me/
 
 What career opportunity would energize you most right now?`,
       sessionId: crypto.randomUUID()
