@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { User, Star } from 'lucide-react';
 
 interface AuthModalProps {
@@ -35,6 +35,9 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
       return;
     }
 
+    // Check for stored career goal
+    const storedGoal = localStorage.getItem('career_goal');
+
     // Mock user data for demo
     const userData = {
       id: Math.random().toString(36).substr(2, 9),
@@ -45,10 +48,16 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
       xp: 0,
       tokens: 100,
       joinDate: new Date().toISOString(),
-      avatar: 'career-starter'
+      avatar: 'career-starter',
+      careerGoal: storedGoal || ''
     };
 
     onLogin(userData);
+    
+    // Clear the stored goal
+    if (storedGoal) {
+      localStorage.removeItem('career_goal');
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -68,6 +77,9 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             </div>
             {isSignUp ? 'Join Your Career Journey' : 'Welcome Back'}
           </DialogTitle>
+          <DialogDescription className="text-center text-gray-400">
+            {isSignUp ? 'Create your account to start your AI-powered career transformation' : 'Sign in to continue your career journey with AIShura'}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

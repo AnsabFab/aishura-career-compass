@@ -1,182 +1,116 @@
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, User, Circle, Book } from 'lucide-react';
+import { TrendingUp, Target, Zap, Trophy, Calendar, Star } from 'lucide-react';
 
 interface UserProgressProps {
   user: any;
 }
 
 export const UserProgress = ({ user }: UserProgressProps) => {
-  const levelProgress = (user.xp % 1000) / 10; // XP needed for next level
-  const badges = [
-    { name: 'Career Explorer', description: 'Started your journey', earned: true, icon: Circle },
-    { name: 'Self-Discovery Master', description: 'Completed 5 self-assessments', earned: user.xp >= 500, icon: User },
-    { name: 'Action Taker', description: 'Completed 3 career actions', earned: user.xp >= 800, icon: Star },
-    { name: 'Networking Pro', description: 'Connected with 10 professionals', earned: user.xp >= 1200, icon: Book },
+  const progressData = [
+    {
+      title: "Career Development",
+      progress: 75,
+      icon: TrendingUp,
+      color: "from-purple-400 to-pink-400",
+      description: "Skills and knowledge advancement"
+    },
+    {
+      title: "Network Building",
+      progress: 60,
+      icon: Target,
+      color: "from-cyan-400 to-blue-400",
+      description: "Professional connections growth"
+    },
+    {
+      title: "Goal Achievement",
+      progress: 85,
+      icon: Trophy,
+      color: "from-pink-400 to-purple-400",
+      description: "Completed milestones and objectives"
+    }
   ];
 
-  const avatarThemes = [
-    { name: 'Career Starter', cost: 0, owned: true, description: 'Default professional look' },
-    { name: 'Career Warrior', cost: 200, owned: user.tokens >= 200, description: 'Bold and confident style' },
-    { name: 'UX Master', cost: 300, owned: user.tokens >= 300, description: 'Creative and innovative design' },
-    { name: 'Tech Leader', cost: 500, owned: user.tokens >= 500, description: 'Future-focused appearance' },
+  const achievements = [
+    { name: "First Steps", description: "Completed onboarding", date: "2024-01-01", icon: Star },
+    { name: "Network Builder", description: "Connected with 10+ professionals", date: "2024-01-15", icon: Target },
+    { name: "Skill Master", description: "Completed 5 skill assessments", date: "2024-02-01", icon: Zap }
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Progress Overview */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="glass-effect border-cosmic-500/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Star className="w-5 h-5 text-cosmic-400" />
-              Level Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold text-cosmic-400">Level {user.level}</span>
-                <span className="text-sm text-muted-foreground">{user.xp} XP</span>
-              </div>
-              <Progress value={levelProgress} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                {Math.max(0, 1000 - (user.xp % 1000))} XP to next level
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-effect border-aurora-500/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Circle className="w-5 h-5 text-aurora-400" />
-              Trust Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold text-aurora-400">{user.trustScore}</span>
-                <span className="text-sm text-muted-foreground">
-                  {user.trustScore <= 30 ? 'Cheerful' : user.trustScore <= 70 ? 'Practical' : 'Strategic'}
-                </span>
-              </div>
-              <Progress value={user.trustScore} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                AIShura's personality evolves with your trust level
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-effect border-neon-500/20">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Book className="w-5 h-5 text-neon-400" />
-              Tokens
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold text-neon-400">{user.tokens}</span>
-                <span className="text-sm text-muted-foreground">Available</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Earn tokens by completing quests and taking career actions
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-8">
+      <div className="text-center space-y-4">
+        <h2 className="text-3xl font-orbitron font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+          Your Progress Journey
+        </h2>
+        <p className="text-gray-300 text-lg">Track your career advancement with AIShura</p>
       </div>
 
-      {/* Badges Section */}
-      <Card className="glass-effect border-cosmic-500/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="w-5 h-5 text-cosmic-400" />
-            Achievement Badges
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {badges.map((badge) => (
-              <div
-                key={badge.name}
-                className={`p-4 rounded-xl border transition-all duration-300 ${
-                  badge.earned
-                    ? 'border-cosmic-500/40 bg-cosmic-500/10'
-                    : 'border-muted/20 bg-muted/5 opacity-60'
-                }`}
-              >
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    badge.earned ? 'bg-cosmic-500/20' : 'bg-muted/20'
-                  }`}>
-                    <badge.icon className={`w-6 h-6 ${
-                      badge.earned ? 'text-cosmic-400' : 'text-muted-foreground'
-                    }`} />
+      {/* Progress Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {progressData.map((item, index) => {
+          const IconComponent = item.icon;
+          return (
+            <Card key={index} className="bg-black/20 backdrop-blur-xl border border-white/10 hover:bg-black/30 transition-all duration-300">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${item.color} p-3`}>
+                    <IconComponent className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm">{badge.name}</h4>
-                    <p className="text-xs text-muted-foreground">{badge.description}</p>
+                    <CardTitle className="text-white text-lg">{item.title}</CardTitle>
+                    <p className="text-gray-400 text-sm">{item.description}</p>
                   </div>
-                  {badge.earned && (
-                    <Badge variant="secondary" className="text-xs">
-                      Earned
-                    </Badge>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Progress</span>
+                    <span className={`font-bold bg-gradient-to-r ${item.color} bg-clip-text text-transparent`}>
+                      {item.progress}%
+                    </span>
+                  </div>
+                  <Progress value={item.progress} className="h-2" />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
-      {/* Avatar Customization */}
-      <Card className="glass-effect border-aurora-500/20">
+      {/* Achievements */}
+      <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5 text-aurora-400" />
-            Avatar Themes
+          <CardTitle className="text-white text-xl flex items-center gap-3">
+            <Trophy className="w-6 h-6 text-yellow-400" />
+            Recent Achievements
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {avatarThemes.map((theme) => (
-              <div
-                key={theme.name}
-                className={`p-4 rounded-xl border transition-all duration-300 ${
-                  theme.owned
-                    ? 'border-aurora-500/40 bg-aurora-500/10'
-                    : 'border-muted/20 bg-muted/5'
-                }`}
-              >
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl ${
-                    theme.owned ? 'bg-aurora-500/20' : 'bg-muted/20'
-                  }`}>
-                    🎭
+          <div className="space-y-4">
+            {achievements.map((achievement, index) => {
+              const IconComponent = achievement.icon;
+              return (
+                <div key={index} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-purple-400 to-cyan-400 p-2">
+                    <IconComponent className="w-6 h-6 text-white" />
                   </div>
-                  <div>
-                    <h4 className="font-medium text-sm">{theme.name}</h4>
-                    <p className="text-xs text-muted-foreground">{theme.description}</p>
+                  <div className="flex-1">
+                    <h3 className="text-white font-semibold">{achievement.name}</h3>
+                    <p className="text-gray-400 text-sm">{achievement.description}</p>
                   </div>
-                  {theme.cost === 0 ? (
-                    <Badge variant="secondary" className="text-xs">Default</Badge>
-                  ) : theme.owned ? (
-                    <Badge variant="secondary" className="text-xs">Owned</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs">
-                      {theme.cost} tokens
+                  <div className="text-right">
+                    <Badge variant="outline" className="border-purple-400/30 text-purple-300">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {new Date(achievement.date).toLocaleDateString()}
                     </Badge>
-                  )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

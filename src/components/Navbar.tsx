@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   onAuthClick: () => void;
@@ -16,8 +17,8 @@ export const Navbar = ({ onAuthClick, isAuthenticated, onLogout }: NavbarProps) 
     <nav className="fixed top-0 w-full z-50 glass-effect border-b border-cosmic-500/20 backdrop-blur-xl">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo Only */}
-          <div className="flex items-center">
+          {/* Logo */}
+          <Link to="/" className="flex items-center">
             <div className="w-12 h-12 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
@@ -25,22 +26,22 @@ export const Navbar = ({ onAuthClick, isAuthenticated, onLogout }: NavbarProps) 
                 className="w-10 h-10 object-contain"
               />
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            <Link to="/#features" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               Features
-            </a>
-            <a href="#quests" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            </Link>
+            <Link to="/#quests" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               Quests
-            </a>
-            <a href="#leaderboard" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            </Link>
+            <Link to="/#leaderboard" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               Leaderboard
-            </a>
-            <a href="#about" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            </Link>
+            <Link to="/about" className="text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               About
-            </a>
+            </Link>
           </div>
 
           {/* Auth Buttons */}
@@ -88,18 +89,18 @@ export const Navbar = ({ onAuthClick, isAuthenticated, onLogout }: NavbarProps) 
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden py-4 space-y-4 border-t border-cosmic-500/20">
-            <a href="#features" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            <Link to="/#features" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               Features
-            </a>
-            <a href="#quests" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            </Link>
+            <Link to="/#quests" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               Quests
-            </a>
-            <a href="#leaderboard" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            </Link>
+            <Link to="/#leaderboard" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               Leaderboard
-            </a>
-            <a href="#about" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
+            </Link>
+            <Link to="/about" className="block text-foreground/80 hover:text-cosmic-400 transition-colors font-medium">
               About
-            </a>
+            </Link>
             <div className="pt-4 space-y-3">
               {!isAuthenticated ? (
                 <>

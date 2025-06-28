@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +11,7 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
   const [currentText, setCurrentText] = useState('');
   const [textIndex, setTextIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [careerGoal, setCareerGoal] = useState('');
 
   const heroTexts = [
     "Transform Your Career Journey",
@@ -39,6 +39,14 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
 
     return () => clearTimeout(timer);
   }, [currentText, isDeleting, textIndex, heroTexts]);
+
+  const handleCareerGoalSubmit = () => {
+    if (careerGoal.trim()) {
+      // Store the goal and redirect to auth
+      localStorage.setItem('career_goal', careerGoal.trim());
+      onAuthClick();
+    }
+  };
 
   const aiGeneratedSamples = [
     { 
@@ -92,7 +100,7 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
             {/* Badge */}
             <Badge className="mb-6 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-300 border-cyan-500/30 px-6 py-3 text-base animate-fade-in backdrop-blur-xl">
               <Brain className="w-5 h-5 mr-3" />
-              Powered by Advanced Neural AI
+              <span className="text-white">Powered by Advanced Neural AI</span>
             </Badge>
 
             {/* Main Title */}
@@ -127,10 +135,12 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
                 <input 
                   type="text" 
                   placeholder="Describe your career goals..."
+                  value={careerGoal}
+                  onChange={(e) => setCareerGoal(e.target.value)}
                   className="flex-1 bg-transparent text-white placeholder-gray-400 px-4 py-3 focus:outline-none text-base"
                 />
                 <Button 
-                  onClick={onAuthClick}
+                  onClick={handleCareerGoalSubmit}
                   className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg"
                 >
                   <Sparkles className="w-4 h-4" />
@@ -152,12 +162,13 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
               </Button>
               
               <Button 
+                onClick={onAuthClick}
                 variant="outline"
                 size="lg"
                 className="border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 px-8 py-4 text-lg rounded-2xl backdrop-blur-xl group font-orbitron"
               >
                 <Play className="mr-3 w-6 h-6 group-hover:scale-110 transition-transform" />
-                Watch Demo
+                Experience Demo
               </Button>
             </div>
           </div>
@@ -225,16 +236,6 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-6 h-10 border-2 border-cyan-500/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-gradient-to-b from-purple-400 to-cyan-400 rounded-full mt-2 animate-pulse" />
-          </div>
-          <span className="text-xs text-cyan-400 font-medium">Scroll to explore</span>
         </div>
       </div>
     </section>
