@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Sparkles, ArrowRight, Users, Trophy, Zap } from 'lucide-react';
+import { Play, Sparkles, ArrowRight, Users, Trophy, Zap, Brain, Target, Rocket } from 'lucide-react';
 
 interface VideoHeroProps {
   onAuthClick: () => void;
@@ -21,7 +21,7 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
   ];
 
   useEffect(() => {
-    const typeSpeed = isDeleting ? 50 : 150;
+    const typeSpeed = isDeleting ? 50 : 120;
     const currentFullText = heroTexts[textIndex];
 
     const timer = setTimeout(() => {
@@ -40,104 +40,187 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
     return () => clearTimeout(timer);
   }, [currentText, isDeleting, textIndex, heroTexts]);
 
-  const stats = [
-    { icon: Users, value: "50K+", label: "Career Journeys" },
-    { icon: Trophy, value: "98%", label: "Success Rate" },
-    { icon: Zap, value: "24/7", label: "AI Support" }
+  const aiGeneratedSamples = [
+    { 
+      title: "Neural Networks", 
+      image: "/lovable-uploads/5ca24359-50be-4bcd-be20-51971e0d820e.png",
+      description: "Advanced AI algorithms at work"
+    },
+    { 
+      title: "Digital Consciousness", 
+      image: "/lovable-uploads/8e8dd624-3d38-4659-b734-54f3888324e1.png",
+      description: "The future of human-AI interaction"
+    },
+    { 
+      title: "Quantum Realm", 
+      image: "/lovable-uploads/426d49d4-ebf8-4f7d-8285-92c183e49442.png",
+      description: "Exploring infinite possibilities"
+    },
+    { 
+      title: "Cosmic Intelligence", 
+      image: "/lovable-uploads/e93683f1-f790-4100-8e1e-02ce35c348ee.png",
+      description: "Where creativity meets technology"
+    }
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 w-full">
-      {/* Background Video Effect */}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden w-full">
+      {/* Main AI Background */}
       <div className="absolute inset-0">
         <img 
-          src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=1920&h=1080&fit=crop" 
-          alt="AI Neural Network"
-          className="w-full h-full object-cover opacity-30"
+          src="/lovable-uploads/f75da6ee-c1bb-4473-a4d3-7ca8ab9407ef.png" 
+          alt="AI Neural Network Background"
+          className="w-full h-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/60 to-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-purple-900/90 to-blue-900/95" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
       </div>
 
-      {/* Floating Orbs */}
+      {/* Floating Neural Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-orb w-72 h-72 top-20 left-10 opacity-20" style={{ animationDelay: '0s' }} />
-        <div className="floating-orb w-56 h-56 top-1/2 right-20 opacity-15" style={{ animationDelay: '2s' }} />
-        <div className="floating-orb w-40 h-40 bottom-20 left-1/3 opacity-25" style={{ animationDelay: '4s' }} />
+        <div className="floating-orb w-96 h-96 top-20 left-10 opacity-20 bg-gradient-to-r from-purple-500/30 to-cyan-500/30" style={{ animationDelay: '0s' }} />
+        <div className="floating-orb w-64 h-64 top-1/2 right-20 opacity-15 bg-gradient-to-r from-blue-500/30 to-pink-500/30" style={{ animationDelay: '2s' }} />
+        <div className="floating-orb w-48 h-48 bottom-20 left-1/3 opacity-25 bg-gradient-to-r from-cyan-500/30 to-purple-500/30" style={{ animationDelay: '4s' }} />
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 text-center w-full max-w-6xl mx-auto px-4 py-20">
-        {/* Badge */}
-        <Badge className="mb-6 bg-cosmic-500/20 text-cosmic-300 border-cosmic-500/30 px-4 py-2 text-sm animate-fade-in">
-          <Sparkles className="w-4 h-4 mr-2" />
-          Powered by Advanced AI
-        </Badge>
+      {/* Main Content Container */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* Left Content */}
+          <div className="text-left space-y-8">
+            {/* Badge */}
+            <Badge className="mb-6 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-cyan-300 border-cyan-500/30 px-6 py-3 text-base animate-fade-in backdrop-blur-xl">
+              <Brain className="w-5 h-5 mr-3" />
+              Powered by Advanced Neural AI
+            </Badge>
 
-        {/* Main Logo */}
-        <div className="mb-8 animate-scale-in">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <div className="w-32 h-32 flex items-center justify-center shadow-2xl">
-              <img 
-                src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
-                alt="AIShura Logo" 
-                className="w-24 h-24 object-contain animate-pulse-glow"
-              />
+            {/* Main Title */}
+            <div className="space-y-6">
+              <h1 className="text-4xl md:text-6xl font-orbitron font-bold">
+                <span className="text-white">Unleash Your Career</span>
+                <br />
+                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                  WITH AI
+                </span>
+              </h1>
+              
+              {/* Dynamic Typing Subtitle */}
+              <div className="h-16 flex items-center">
+                <span className="text-xl md:text-2xl text-gray-300 font-light">
+                  {currentText}
+                  <span className="animate-pulse ml-1 text-cyan-400">|</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Description */}
+            <p className="text-lg text-gray-300 max-w-xl leading-relaxed">
+              Experience the power of AI-generated career guidance with our user-friendly platform. 
+              From abstract goals to realistic achievements, our technology enables you to easily 
+              create stunning career paths that are entirely unique.
+            </p>
+
+            {/* Input Section */}
+            <div className="relative max-w-md">
+              <div className="flex items-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-2 hover:bg-white/15 transition-all duration-300">
+                <input 
+                  type="text" 
+                  placeholder="Describe your career goals..."
+                  className="flex-1 bg-transparent text-white placeholder-gray-400 px-4 py-3 focus:outline-none text-base"
+                />
+                <Button 
+                  onClick={onAuthClick}
+                  className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 shadow-lg"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Generate
+                </Button>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button 
+                onClick={onAuthClick}
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 hover:from-purple-700 hover:via-pink-700 hover:to-cyan-700 text-white px-8 py-4 text-lg rounded-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-300 group font-orbitron"
+              >
+                <Rocket className="mr-3 w-6 h-6 group-hover:scale-110 transition-transform" />
+                Start Your Journey
+                <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              
+              <Button 
+                variant="outline"
+                size="lg"
+                className="border-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-400 px-8 py-4 text-lg rounded-2xl backdrop-blur-xl group font-orbitron"
+              >
+                <Play className="mr-3 w-6 h-6 group-hover:scale-110 transition-transform" />
+                Watch Demo
+              </Button>
             </div>
           </div>
-          <div className="h-2 w-48 mx-auto bg-gradient-to-r from-cosmic-500 via-aurora-500 to-neon-500 rounded-full mb-8" />
-        </div>
 
-        {/* Dynamic Typing Text */}
-        <div className="mb-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-          <h2 className="text-2xl md:text-4xl font-inter font-light text-foreground/90 mb-6">
-            Your Emotionally Intelligent Career Companion
-          </h2>
-          <div className="h-20 flex items-center justify-center">
-            <span className="text-2xl md:text-4xl font-semibold bg-gradient-to-r from-cosmic-400 via-aurora-400 to-neon-400 bg-clip-text text-transparent">
-              {currentText}
-              <span className="typing-indicator ml-2" />
-            </span>
+          {/* Right Content - AI Generated Showcase */}
+          <div className="relative">
+            {/* Main Featured Image */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+              <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-3xl p-6 hover:scale-105 transition-all duration-500">
+                <img 
+                  src="/lovable-uploads/f8f28477-2f46-41eb-9478-3afa4e0b649d.png"
+                  alt="AI Generated Career Vision"
+                  className="w-full h-96 object-cover rounded-2xl"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent rounded-2xl" />
+                <div className="absolute bottom-8 left-8 text-white">
+                  <h3 className="text-xl font-bold mb-2">Your Career Universe</h3>
+                  <p className="text-gray-300 text-sm">Infinite possibilities await</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sample Grid */}
+            <div className="grid grid-cols-2 gap-4 mt-8">
+              {aiGeneratedSamples.map((sample, index) => (
+                <div key={index} className="group relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300" />
+                  <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 hover:scale-105 transition-all duration-300">
+                    <img 
+                      src={sample.image}
+                      alt={sample.title}
+                      className="w-full h-24 object-cover rounded-xl"
+                    />
+                    <div className="mt-2">
+                      <h4 className="text-white text-xs font-semibold">{sample.title}</h4>
+                      <p className="text-gray-400 text-xs">{sample.description}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto mb-12 leading-relaxed animate-slide-up" style={{ animationDelay: '0.6s' }}>
-          Experience the future of career guidance with AI that understands your emotions, 
-          detects hesitation, and transforms uncertainty into confident action.
-        </p>
-
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in" style={{ animationDelay: '0.9s' }}>
-          <Button 
-            onClick={onAuthClick}
-            size="lg"
-            className="bg-gradient-to-r from-cosmic-600 to-aurora-600 hover:from-cosmic-700 hover:to-aurora-700 text-white px-8 py-4 text-lg rounded-xl shadow-2xl hover:shadow-cosmic-500/25 transition-all duration-300 group"
-          >
-            Start Your Journey
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
-          
-          <Button 
-            variant="outline"
-            size="lg"
-            className="border-2 border-cosmic-500/50 text-cosmic-400 hover:bg-cosmic-500/10 px-8 py-4 text-lg rounded-xl backdrop-blur-sm group"
-          >
-            <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
-            Watch Demo
-          </Button>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-slide-up" style={{ animationDelay: '1.2s' }}>
-          {stats.map((stat, index) => {
+        {/* Stats Section */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { icon: Users, value: "50K+", label: "Career Transformations", color: "from-purple-400 to-pink-400" },
+            { icon: Trophy, value: "98%", label: "Success Rate", color: "from-cyan-400 to-blue-400" },
+            { icon: Target, value: "24/7", label: "AI Guidance", color: "from-pink-400 to-purple-400" }
+          ].map((stat, index) => {
             const IconComponent = stat.icon;
             return (
-              <div key={index} className="text-center group">
-                <div className="glass-effect p-6 rounded-2xl border border-cosmic-500/20 hover:border-cosmic-500/40 transition-all duration-300 hover:scale-105">
-                  <IconComponent className="w-8 h-8 mx-auto mb-4 text-cosmic-400 group-hover:scale-110 transition-transform" />
-                  <div className="text-3xl md:text-4xl font-bold text-gradient mb-2">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+              <div key={index} className="text-center group animate-fade-in" style={{ animationDelay: `${index * 0.2}s` }}>
+                <div className="bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-white/10 hover:bg-white/10 hover:scale-105 transition-all duration-300 group-hover:shadow-2xl">
+                  <div className={`w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-r ${stat.color} p-4 group-hover:scale-110 transition-transform`}>
+                    <IconComponent className="w-8 h-8 text-white" />
+                  </div>
+                  <div className={`text-4xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2 font-orbitron`}>
+                    {stat.value}
+                  </div>
+                  <div className="text-gray-400 font-medium">{stat.label}</div>
                 </div>
               </div>
             );
@@ -148,10 +231,10 @@ export const VideoHero = ({ onAuthClick }: VideoHeroProps) => {
       {/* Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-6 h-10 border-2 border-cosmic-500/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-cosmic-400 rounded-full mt-2 animate-pulse" />
+          <div className="w-6 h-10 border-2 border-cyan-500/50 rounded-full flex justify-center">
+            <div className="w-1 h-3 bg-gradient-to-b from-purple-400 to-cyan-400 rounded-full mt-2 animate-pulse" />
           </div>
-          <span className="text-xs text-cosmic-400 font-medium">Scroll to explore</span>
+          <span className="text-xs text-cyan-400 font-medium">Scroll to explore</span>
         </div>
       </div>
     </section>

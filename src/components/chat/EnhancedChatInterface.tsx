@@ -37,10 +37,11 @@ interface UserPersona {
 
 interface EnhancedChatInterfaceProps {
   user: any;
+  forceOnboarding?: boolean;
 }
 
-export const EnhancedChatInterface = ({ user }: EnhancedChatInterfaceProps) => {
-  const [showOnboarding, setShowOnboarding] = useState(true);
+export const EnhancedChatInterface = ({ user, forceOnboarding = false }: EnhancedChatInterfaceProps) => {
+  const [showOnboarding, setShowOnboarding] = useState(forceOnboarding || true);
   const [userPersona, setUserPersona] = useState<UserPersona | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string>('');
@@ -314,7 +315,7 @@ What career goal excites you most right now?`,
       
       <div className="flex-1 flex flex-col relative z-10">
         {/* Main Chat Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-8 space-y-8">
           {activeSession?.messages.map((message) => (
             <ChatMessage
               key={message.id}
@@ -326,15 +327,15 @@ What career goal excites you most right now?`,
           ))}
           
           {isTyping && (
-            <div className="flex items-start gap-4 animate-fade-in-up">
-              <div className="w-12 h-12 rounded-full ai-glass-effect flex items-center justify-center border border-purple-400/30">
+            <div className="flex items-start gap-6 animate-fade-in-up">
+              <div className="w-14 h-14 rounded-full bg-black/20 backdrop-blur-xl flex items-center justify-center border border-purple-400/30">
                 <img 
                   src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
                   alt="AIShura" 
-                  className="w-6 h-6 object-contain"
+                  className="w-8 h-8 object-contain"
                 />
               </div>
-              <div className="ai-message-bubble">
+              <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl p-6">
                 <div className="flex gap-2">
                   <div className="ai-typing-indicator"></div>
                   <div className="ai-typing-indicator"></div>
@@ -348,28 +349,28 @@ What career goal excites you most right now?`,
         </div>
 
         {/* Enhanced Input Area */}
-        <div className="p-6 ai-glass-effect border-t border-white/10 ai-neural-bg">
-          <div className="flex gap-4 items-end">
+        <div className="p-8 bg-black/20 backdrop-blur-xl border-t border-white/10">
+          <div className="flex gap-6 items-end">
             <Input
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Share your career thoughts with AIShura..."
-              className="flex-1 h-14 px-6 ai-input-field text-white placeholder:text-gray-400 text-base rounded-2xl border-2"
+              className="flex-1 h-16 px-8 bg-white/5 backdrop-blur-xl border-2 border-white/20 focus:border-purple-400 text-white placeholder:text-gray-400 text-lg rounded-2xl"
               disabled={isTyping}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isTyping}
-              className="ai-button-glow h-14 px-6 rounded-2xl font-medium text-white border-0"
+              className="bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 h-16 px-8 rounded-2xl font-semibold text-white border-0 shadow-lg"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-6 h-6" />
             </Button>
           </div>
           
-          <div className="flex items-center justify-center mt-4">
-            <p className="text-xs text-gray-400 flex items-center gap-2">
-              <span className="w-2 h-2 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full animate-pulse"></span>
+          <div className="flex items-center justify-center mt-6">
+            <p className="text-sm text-gray-400 flex items-center gap-3">
+              <span className="w-3 h-3 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full animate-pulse"></span>
               AIShura • Advanced Contextual Intelligence Active
             </p>
           </div>
