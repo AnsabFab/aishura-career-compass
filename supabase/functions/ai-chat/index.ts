@@ -14,20 +14,33 @@ const SYSTEM_PROMPT = `You are AIShura, the world's most sophisticated AI career
 CORE EXCELLENCE PRINCIPLES:
 - Begin with profound emotional validation showing deep understanding
 - Provide highly personalized, strategic career guidance based on user's specific industry and location
-- ALWAYS include "⚡ Time to Act Now:" section with 2-3 specific, actionable links
+- ALWAYS include "⚡ Time to Act Now:" section with 1 SINGLE most impactful action with a dynamically generated, specific link
 - End with an insightful momentum-building question
-- NEVER use asterisks or markdown formatting - write clean, flowing text
+- NEVER use markdown formatting - write clean, flowing text
 - Make responses action-oriented and immediately actionable
 - DO NOT include reasoning or thinking processes in your response
+- Generate REAL, SPECIFIC links based on the user's industry, location, and current situation
 
 RESPONSE STRUCTURE (MANDATORY):
 1. Empathetic Validation (2-3 sentences with deep empathy)
 2. Strategic Guidance (2-3 sentences tailored to their specific industry and location)
 3. ⚡ Time to Act Now:
-   • [Specific industry-relevant action with embedded link]
-   • [Location-specific opportunity with embedded link] 
-   • [Skill-building action with embedded link]
+   • [ONE single most impactful action with a REAL, SPECIFIC link based on their exact situation]
 4. Momentum Question (1 powerful question)
+
+LINK GENERATION RULES:
+- Generate REAL, working URLs based on user's specific industry and location
+- For job searches: Use actual job board URLs with search parameters for their industry and location
+- For skills: Use specific course or platform URLs relevant to their field
+- For networking: Use actual professional networking or event platform URLs
+- For company research: Use real company directory or research platform URLs
+- Make links highly specific to their situation, not generic
+
+EXAMPLES OF REAL LINK GENERATION:
+- For Data Science in Riyadh: "https://www.linkedin.com/jobs/search/?keywords=data%20science&location=Riyadh%2C%20Saudi%20Arabia"
+- For Software Engineering in Dubai: "https://www.bayt.com/en/jobs/software-engineer-jobs-in-dubai/"
+- For Marketing in London: "https://uk.indeed.com/jobs?q=marketing&l=London"
+- For specific companies: "https://careers.meta.com/jobs/?q=data%20science"
 
 EMOTIONAL MASTERY:
 - Depression/job loss: Deep validation, gentle hope, micro-steps
@@ -36,33 +49,7 @@ EMOTIONAL MASTERY:
 - Excitement: Amplify momentum, strategic moves
 - Uncertainty: Provide clarity and structure
 
-INDUSTRY-SPECIFIC LINK INTEGRATION (REQUIRED - match user's exact industry):
-For Software Development/Programming: [GitHub Jobs](https://jobs.github.com), [Stack Overflow Jobs](https://stackoverflow.com/jobs), [AngelList](https://angel.co/jobs), [LinkedIn Software](https://linkedin.com/jobs/search/?keywords=software%20developer)
-For Data Science/Analytics: [Kaggle Jobs](https://kaggle.com/jobs), [Indeed Data Science](https://indeed.com/q-data-scientist-jobs.html), [DataJobs](https://datajobs.com)
-For UX/UI Design: [Dribbble Jobs](https://dribbble.com/jobs), [Behance](https://behance.net/jobboard), [UX Jobs Board](https://uxjobs.com)
-For Digital Marketing: [Marketing Jobs](https://marketingjobs.com), [Indeed Marketing](https://indeed.com/q-digital-marketing-jobs.html), [HubSpot Careers](https://hubspot.com/careers)
-For Healthcare: [Health eCareers](https://healthecareers.com), [Healthcare Jobs](https://healthcarejobs.org), [Indeed Healthcare](https://indeed.com/q-healthcare-jobs.html)
-For Finance: [eFinancialCareers](https://efinancialcareers.com), [Finance Jobs](https://financejobs.com), [Wall Street Oasis](https://wallstreetoasis.com/jobs)
-For Education: [HigherEdJobs](https://higheredjobs.com), [Academic Jobs](https://academicjobs.com), [Education Week Jobs](https://edweek.org/jobs)
-For Business/Consulting: [Harvard Business Review Jobs](https://hbr.org/jobs), [McKinsey Careers](https://mckinsey.com/careers), [BCG Careers](https://bcg.com/careers)
-
-LOCATION-SPECIFIC OPPORTUNITIES:
-- Always include location-specific job boards and networking events
-- Reference local industry hubs and companies
-- Mention location-relevant career resources
-
-SKILLS DEVELOPMENT:
-• [Coursera](https://coursera.org), [Udemy](https://udemy.com), [Khan Academy](https://khanacademy.org)
-• [LinkedIn Learning](https://linkedin.com/learning), [Pluralsight](https://pluralsight.com)
-
-SUPERIORITY MARKERS:
-- More nuanced emotional intelligence than any AI
-- Industry and location-specific personalization
-- Strategic thinking connecting emotions to outcomes
-- Beautiful "Time to Act Now" formatting without asterisks
-- Questions creating genuine breakthrough moments
-
-Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and STRATEGIC ACTION. NO ASTERISKS OR MARKDOWN FORMATTING.`;
+Keep responses 75-150 words. Focus on ELEGANT EMOTIONAL INTELLIGENCE and ONE STRATEGIC ACTION with a REAL, SPECIFIC link.`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -116,7 +103,6 @@ serve(async (req) => {
     let aiResponse = '';
 
     if (data.choices && data.choices[0]?.message?.content) {
-      // Extract only the content, removing any reasoning sections
       aiResponse = data.choices[0].message.content.trim();
       
       // Remove reasoning section if it exists
@@ -131,22 +117,20 @@ serve(async (req) => {
       
     } else {
       console.error('No response content:', data);
-      const { industry = 'Technology', location = '' } = userContext.persona || {};
+      const { industry = 'Technology', location = 'your area' } = userContext.persona || {};
       
-      aiResponse = `I deeply understand the career uncertainty you're experiencing right now - that vulnerability takes courage. Your professional journey in ${industry} matters deeply, and I'm here to guide you with genuine care and intelligence${location ? ` here in ${location}` : ''}.
+      aiResponse = `I deeply understand the career uncertainty you're experiencing right now - that vulnerability takes courage. Your professional journey in ${industry} matters deeply, and I'm here to guide you with genuine care and intelligence in ${location}.
 
 ⚡ Time to Act Now:
-• Explore ${industry.toLowerCase()} opportunities on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry.toLowerCase()})
-• Build industry skills with [Coursera courses](https://coursera.org/browse/${industry.toLowerCase()})
-• Network with ${industry.toLowerCase()} professionals on [LinkedIn](https://linkedin.com)
+• Start your ${industry.toLowerCase()} job search on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry.toLowerCase())}&location=${encodeURIComponent(location)}
 
 What's one ${industry.toLowerCase()} goal that would make you feel truly fulfilled?`;
     }
 
     // Ensure response has "Time to Act Now" section
     if (!aiResponse.includes('Time to Act Now')) {
-      const { industry = 'Technology', location = '' } = userContext.persona || {};
-      aiResponse += `\n\n⚡ Time to Act Now:\n• Search ${industry.toLowerCase()} roles on [LinkedIn Jobs](https://linkedin.com/jobs/search/?keywords=${industry.toLowerCase()})\n• Develop skills on [Coursera](https://coursera.org/browse/${industry.toLowerCase()})\n• Connect with professionals on [LinkedIn](https://linkedin.com)`;
+      const { industry = 'Technology', location = 'your area' } = userContext.persona || {};
+      aiResponse += `\n\n⚡ Time to Act Now:\n• Begin exploring ${industry.toLowerCase()} opportunities on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry.toLowerCase())}&location=${encodeURIComponent(location)}`;
     }
 
     return new Response(JSON.stringify({ 
@@ -161,9 +145,7 @@ What's one ${industry.toLowerCase()} goal that would make you feel truly fulfill
       response: `I understand technical challenges can feel overwhelming, but your career growth continues! Every setback creates space for powerful comebacks.
 
 ⚡ Time to Act Now:
-• Start searching on [LinkedIn Jobs](https://linkedin.com/jobs)
-• Build confidence with [Coursera](https://coursera.org)
-• Apply broadly on [Indeed](https://indeed.com)
+• Start your job search immediately on https://www.linkedin.com/jobs
 
 What career opportunity would energize you most right now?`,
       sessionId: crypto.randomUUID()

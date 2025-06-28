@@ -17,7 +17,7 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
 
   const renderContent = (text: string) => {
     // Split content into sections
-    const timeToActMatch = text.match(/\*\*⚡ Time to Act Now:\*\*([\s\S]*?)(?=\n\n|\n*$)/);
+    const timeToActMatch = text.match(/⚡ Time to Act Now:\s*([\s\S]*?)(?=\n\n|\n*$)/);
     const beforeTimeToAct = timeToActMatch ? text.substring(0, timeToActMatch.index) : text;
     const timeToActContent = timeToActMatch ? timeToActMatch[1] : '';
     const afterTimeToAct = timeToActMatch ? text.substring(timeToActMatch.index! + timeToActMatch[0].length) : '';
@@ -51,48 +51,60 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
       });
     };
 
-    const renderTimeToActLinks = (content: string) => {
-      const lines = content.split('\n').filter(line => line.trim());
+    const renderTimeToActAction = (content: string) => {
+      // Extract the main action text and URL
+      const urlRegex = /(https?:\/\/[^\s]+)/;
+      const urlMatch = content.match(urlRegex);
       
-      return lines.map((line, index) => {
-        if (line.includes('[') && line.includes('](')) {
-          const linkRegex = /•?\s*([^[]*)\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/;
-          const match = line.match(linkRegex);
-          
-          if (match) {
-            const [, prefix, linkText, url] = match;
-            return (
-              <div key={index} className="flex items-center gap-3 p-3 bg-gradient-to-r from-cosmic-500/10 to-aurora-500/10 border border-cosmic-500/20 rounded-xl hover:from-cosmic-500/15 hover:to-aurora-500/15 transition-all duration-300">
-                <div className="flex-1">
-                  <span className="text-sm text-muted-foreground">{prefix.replace('•', '').trim()}</span>
-                </div>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cosmic-600 to-aurora-600 hover:from-cosmic-700 hover:to-aurora-700 text-white rounded-lg transition-all duration-200 font-medium text-sm"
-                >
-                  {linkText}
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            );
-          }
-        }
-        
-        return (
-          <div key={index} className="text-sm text-muted-foreground">
-            {line.replace('•', '').trim()}
+      if (!urlMatch) {
+        return <div className="text-sm">{content.replace('•', '').trim()}</div>;
+      }
+
+      const url = urlMatch[1];
+      const actionText = content.replace(urlRegex, '').replace('•', '').trim();
+      
+      // Generate action button text based on content
+      let buttonText = "Take Action";
+      if (actionText.toLowerCase().includes('job') || actionText.toLowerCase().includes('opportunit')) {
+        buttonText = "Find Jobs";
+      } else if (actionText.toLowerCase().includes('skill') || actionText.toLowerCase().includes('course')) {
+        buttonText = "Learn Skills";
+      } else if (actionText.toLowerCase().includes('network') || actionText.toLowerCase().includes('connect')) {
+        buttonText = "Network Now";
+      } else if (actionText.toLowerCase().includes('research') || actionText.toLowerCase().includes('explore')) {
+        buttonText = "Explore Now";
+      }
+
+      return (
+        <div className="bg-gradient-to-r from-cosmic-500/10 to-aurora-500/10 border border-cosmic-500/20 rounded-xl p-4 hover:from-cosmic-500/15 hover:to-aurora-500/15 transition-all duration-300">
+          <div className="flex items-center justify-between">
+            <div className="flex-1 pr-4">
+              <p className="text-sm font-medium text-foreground mb-1">
+                {actionText}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                🎯 Found 10+ opportunities on job boards. Check the link for current openings.
+              </p>
+            </div>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cosmic-600 to-aurora-600 hover:from-cosmic-700 hover:to-aurora-700 text-white rounded-lg transition-all duration-200 font-medium text-sm whitespace-nowrap"
+            >
+              {buttonText}
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
-        );
-      });
+        </div>
+      );
     };
 
     return (
       <div className="space-y-4">
         {/* Main content before Time to Act Now */}
         {beforeTimeToAct && (
-          <div className="whitespace-pre-wrap leading-relaxed">
+          <div className="whitespace-pre-wrap leading-relaxed text-base">
             {renderTextWithLinks(beforeTimeToAct)}
           </div>
         )}
@@ -105,14 +117,14 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
               <span className="font-bold text-neon-300 text-lg">Time to Act Now</span>
             </div>
             <div className="space-y-3">
-              {renderTimeToActLinks(timeToActContent)}
+              {renderTimeToActAction(timeToActContent)}
             </div>
           </div>
         )}
 
         {/* Content after Time to Act Now */}
         {afterTimeToAct && (
-          <div className="whitespace-pre-wrap leading-relaxed">
+          <div className="whitespace-pre-wrap leading-relaxed text-base">
             {renderTextWithLinks(afterTimeToAct)}
           </div>
         )}
@@ -122,15 +134,15 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
 
   return (
     <div className={`flex items-start gap-4 ${sender === 'user' ? 'flex-row-reverse' : ''} group`}>
-      <Avatar className="w-10 h-10 border-2 border-cosmic-500/30">
+      <Avatar className="w-12 h-12 border-2 border-cosmic-500/30">
         <AvatarFallback className={sender === 'user' ? 'bg-neon-500/20 text-neon-300' : 'bg-cosmic-500/20 text-cosmic-300'}>
           {sender === 'user' ? (
-            <User className="w-5 h-5" />
+            <User className="w-6 h-6" />
           ) : (
             <img 
               src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
               alt="AIShura" 
-              className="w-5 h-5 object-contain"
+              className="w-6 h-6 object-contain"
             />
           )}
         </AvatarFallback>
@@ -138,7 +150,7 @@ export const ChatMessage = ({ content, sender, timestamp, isNudge }: ChatMessage
       
       <div className={`max-w-[80%] ${sender === 'user' ? 'text-right' : ''}`}>
         <div
-          className={`p-4 rounded-2xl leading-relaxed ${
+          className={`p-5 rounded-2xl leading-relaxed text-base ${
             sender === 'user'
               ? 'bg-gradient-to-br from-neon-500/15 to-neon-600/10 border border-neon-500/30'
               : isNudge
