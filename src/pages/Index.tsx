@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Hero } from '@/components/Hero';
 import { Dashboard } from '@/components/Dashboard';
 import { AuthModal } from '@/components/AuthModal';
@@ -13,9 +13,20 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  
+  // Refs to prevent unnecessary re-renders and modal popups
+  const authStateInitialized = useRef(false);
+  const preventModalPopup = useRef(false);
+
+  // Add debug info
+  const addDebugInfo = useCallback((info: string) => {
+    console.log('[INDEX DEBUG]:', info);
+    setDebugInfo(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${info}`]);
+  }, []);
 
   // Helper function to create user data object
-  const createUserData = (supabaseUser: User, storedGoal?: string | null) => {
+  const createUserData = useCallback((supabaseUser: User, storedGoal?: string | null) => {
     return {
       id: supabaseUser.id,
       email: supabaseUser.email,
@@ -28,12 +39,14 @@ const Index = () => {
       avatar: 'career-starter',
       careerGoal: storedGoal || ''
     };
-  };
+  }, []);
 
   // Helper function to handle user authentication
-  const handleUserAuthentication = (supabaseUser: User | null) => {
+  const handleUserAuthentication = useCallback((supabaseUser: User | null, source: string = 'unknown') => {
+    addDebugInfo(`handleUserAuthentication called from: ${source}`);
+    
     if (supabaseUser) {
-      console.log('User authenticated:', supabaseUser);
+      addDebugInfo(`User authenticated: ${supabaseUser.email}`);
       
       // Check for stored career goal
       const storedGoal = localStorage.getItem('career_goal');
@@ -49,73 +62,54 @@ const Index = () => {
       // Clear stored goal
       if (storedGoal) {
         localStorage.removeItem('career_goal');
+        addDebugInfo('Cleared stored career goal');
       }
     } else {
-      console.log('User not authenticated');
+      addDebugInfo('User not authenticated - clearing state');
       setUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('aishura_user');
     }
-  };
+  }, [createUserData, addDebugInfo]);
 
-  // Check authentication state
+  // Initialize authentication
   useEffect(() => {
     let isMounted = true;
+    addDebugInfo('Starting auth initialization');
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-        
-        if (!isMounted) return;
-        
-        setSession(session);
-        handleUserAuthentication(session?.user || null);
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session on mount
     const initializeAuth = async () => {
       try {
+        // Get current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error getting session:', error);
-          // Try to load from localStorage as fallback
+          addDebugInfo(`Session error: ${error.message}`);
+          // Try localStorage fallback
           const storedUser = localStorage.getItem('aishura_user');
           if (storedUser && isMounted) {
             try {
               const userData = JSON.parse(storedUser);
+              addDebugInfo('Using localStorage fallback');
               setUser(userData);
               setIsAuthenticated(true);
             } catch (e) {
-              console.error('Error parsing stored user data:', e);
+              addDebugInfo('Invalid localStorage data - clearing');
               localStorage.removeItem('aishura_user');
             }
           }
-        } else if (isMounted) {
-          setSession(session);
-          handleUserAuthentication(session?.user || null);
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-        
-        // Fallback to localStorage
-        const storedUser = localStorage.getItem('aishura_user');
-        if (storedUser && isMounted) {
-          try {
-            const userData = JSON.parse(storedUser);
-            setUser(userData);
-            setIsAuthenticated(true);
-          } catch (e) {
-            console.error('Error parsing stored user data:', e);
-            localStorage.removeItem('aishura_user');
+        } else {
+          if (isMounted) {
+            setSession(session);
+            handleUserAuthentication(session?.user || null, 'initial-session');
           }
         }
+      } catch (error: any) {
+        addDebugInfo(`Auth initialization error: ${error.message}`);
       } finally {
         if (isMounted) {
+          authStateInitialized.current = true;
           setLoading(false);
+          addDebugInfo('Auth initialization completed');
         }
       }
     };
@@ -124,61 +118,152 @@ const Index = () => {
 
     return () => {
       isMounted = false;
+    };
+  }, [handleUserAuthentication, addDebugInfo]);
+
+  // Set up auth state listener (separate from initialization)
+  useEffect(() => {
+    addDebugInfo('Setting up auth state listener');
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        // Only process auth changes after initial setup
+        if (!authStateInitialized.current) {
+          addDebugInfo(`Ignoring auth event during initialization: ${event}`);
+          return;
+        }
+
+        addDebugInfo(`Auth state changed: ${event} - User: ${session?.user?.email || 'none'}`);
+        
+        setSession(session);
+        
+        // Handle different auth events
+        switch (event) {
+          case 'SIGNED_IN':
+            handleUserAuthentication(session?.user || null, 'auth-event-signin');
+            break;
+          case 'SIGNED_OUT':
+            handleUserAuthentication(null, 'auth-event-signout');
+            break;
+          case 'TOKEN_REFRESHED':
+            addDebugInfo('Token refreshed');
+            break;
+          default:
+            addDebugInfo(`Unhandled auth event: ${event}`);
+        }
+      }
+    );
+
+    return () => {
+      addDebugInfo('Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, []);
+  }, [handleUserAuthentication, addDebugInfo]);
 
-  const handleLogin = (userData: any) => {
-    console.log('Handling login with user data:', userData);
+  // Prevent modal from showing during window resize/minimize
+  useEffect(() => {
+    const handleResize = () => {
+      preventModalPopup.current = true;
+      addDebugInfo(`Window resized to: ${window.innerWidth}x${window.innerHeight}`);
+      
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        preventModalPopup.current = false;
+      }, 1000);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        preventModalPopup.current = true;
+        addDebugInfo('Window hidden - preventing modal popup');
+        
+        setTimeout(() => {
+          preventModalPopup.current = false;
+        }, 2000);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [addDebugInfo]);
+
+  const handleLogin = useCallback((userData: any) => {
+    addDebugInfo('Manual login triggered');
     setUser(userData);
     setIsAuthenticated(true);
     setShowAuthModal(false);
-    // Store in localStorage as backup
     localStorage.setItem('aishura_user', JSON.stringify(userData));
-  };
+  }, [addDebugInfo]);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
-      console.log('Attempting to log out...');
+      addDebugInfo('Logout initiated');
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('Error during logout:', error);
+        addDebugInfo(`Logout error: ${error.message}`);
       }
       
-      // Always clear local state regardless of Supabase result
+      // Always clear local state
       setUser(null);
       setIsAuthenticated(false);
       setSession(null);
       localStorage.removeItem('aishura_user');
       localStorage.removeItem('career_goal');
       
-      console.log('Logout completed');
-    } catch (error) {
-      console.error('Unexpected error during logout:', error);
-      // Force clear local state
+      addDebugInfo('Logout completed');
+    } catch (error: any) {
+      addDebugInfo(`Unexpected logout error: ${error.message}`);
+      // Force clear state
       setUser(null);
       setIsAuthenticated(false);
       setSession(null);
       localStorage.removeItem('aishura_user');
     }
-  };
+  }, [addDebugInfo]);
 
-  const handleAuthClick = () => {
+  const handleAuthClick = useCallback(() => {
+    if (preventModalPopup.current) {
+      addDebugInfo('Auth click prevented due to recent window event');
+      return;
+    }
+    
+    addDebugInfo('Auth modal requested');
     setShowAuthModal(true);
-  };
+  }, [addDebugInfo]);
 
-  const handleCloseAuthModal = () => {
+  const handleCloseAuthModal = useCallback(() => {
+    addDebugInfo('Auth modal close requested');
     setShowAuthModal(false);
-  };
+  }, [addDebugInfo]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-blue-900">
         <div className="text-white text-xl font-orbitron">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 border-2 border-cosmic-400 border-t-transparent rounded-full animate-spin"></div>
-            Loading AIShura...
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 border-2 border-cosmic-400 border-t-transparent rounded-full animate-spin"></div>
+              Loading AIShura...
+            </div>
+            {/* Debug info - remove in production */}
+            {debugInfo.length > 0 && (
+              <div className="text-xs text-gray-400 max-w-md">
+                <div className="text-center mb-2">Debug Info:</div>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {debugInfo.slice(-5).map((info, index) => (
+                    <div key={index}>{info}</div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -214,6 +299,18 @@ const Index = () => {
 
       {/* Only show footer when not authenticated */}
       {!isAuthenticated && <Footer />}
+
+      {/* Debug Panel - Remove in production */}
+      {debugInfo.length > 0 && !isAuthenticated && (
+        <div className="fixed bottom-4 right-4 bg-black/80 text-white p-3 rounded-lg text-xs max-w-xs">
+          <div className="text-yellow-400 mb-2">Debug Info:</div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {debugInfo.slice(-10).map((info, index) => (
+              <div key={index}>{info}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <AuthModal 
         isOpen={showAuthModal}
