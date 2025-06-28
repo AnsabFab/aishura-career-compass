@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +42,7 @@ interface EnhancedChatInterfaceProps {
 }
 
 export const EnhancedChatInterface = ({ user, forceOnboarding = false }: EnhancedChatInterfaceProps) => {
-  const [showOnboarding, setShowOnboarding] = useState(forceOnboarding || true);
+  const [showOnboarding, setShowOnboarding] = useState<boolean>(forceOnboarding || true);
   const [userPersona, setUserPersona] = useState<UserPersona | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string>('');
