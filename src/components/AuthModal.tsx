@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { User, Star } from 'lucide-react';
+import { User, Star, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +16,8 @@ interface AuthModalProps {
 export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,25 +26,70 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   });
   const { toast } = useToast();
 
+  const validateForm = () => {
+    if (!formData.email.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Email address is required",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!formData.password.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Password is required",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Validation Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (isSignUp) {
+      if (!formData.name.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Full name is required for sign up",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        toast({
+          title: "Validation Error",
+          description: "Passwords do not match",
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation
-    if (!formData.email || !formData.password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (isSignUp && formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error", 
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
+    if (!validateForm()) {
       return;
     }
 
@@ -51,19 +97,23 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
 
     try {
       if (isSignUp) {
-        // Sign up new user
+        console.log('Attempting sign up with:', { email: formData.email, name: formData.name });
+        
         const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
-              name: formData.name
+              name: formData.name.trim()
             }
           }
         });
 
+        console.log('Sign up response:', { data, error });
+
         if (error) {
+          console.error('Sign up error:', error);
           toast({
             title: "Sign Up Error",
             description: error.message,
@@ -80,7 +130,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           const userData = {
             id: data.user.id,
             email: data.user.email,
-            name: formData.name || data.user.email?.split('@')[0],
+            name: formData.name.trim() || data.user.email?.split('@')[0],
             trustScore: 25,
             level: 1,
             xp: 0,
@@ -90,26 +140,38 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             careerGoal: storedGoal || ''
           };
 
-          onLogin(userData);
-          
+          console.log('Created user data:', userData);
+
           // Clear the stored goal
           if (storedGoal) {
             localStorage.removeItem('career_goal');
           }
 
+          // Call onLogin callback
+          onLogin(userData);
+          
+          // Close modal
+          onClose();
+
           toast({
             title: "Success",
-            description: "Account created successfully! Please check your email to verify your account.",
+            description: data.user.email_confirmed_at 
+              ? "Account created successfully!" 
+              : "Account created! Please check your email to verify your account.",
           });
         }
       } else {
-        // Sign in existing user
+        console.log('Attempting sign in with:', { email: formData.email });
+        
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password
         });
 
+        console.log('Sign in response:', { data, error });
+
         if (error) {
+          console.error('Sign in error:', error);
           toast({
             title: "Sign In Error",
             description: error.message,
@@ -136,12 +198,18 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             careerGoal: storedGoal || ''
           };
 
-          onLogin(userData);
-          
+          console.log('Created user data:', userData);
+
           // Clear the stored goal
           if (storedGoal) {
             localStorage.removeItem('career_goal');
           }
+
+          // Call onLogin callback
+          onLogin(userData);
+          
+          // Close modal
+          onClose();
 
           toast({
             title: "Success",
@@ -150,6 +218,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         }
       }
     } catch (error: any) {
+      console.error('Authentication error:', error);
       toast({
         title: "Error",
         description: error.message || "An unexpected error occurred",
@@ -164,8 +233,39 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      name: '',
+      confirmPassword: ''
+    });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
+  const handleModalOpenChange = (open: boolean) => {
+    if (!open) {
+      resetForm();
+      onClose();
+    }
+  };
+
+  const toggleAuthMode = () => {
+    setIsSignUp(!isSignUp);
+    // Clear form when switching modes
+    setFormData({
+      email: formData.email, // Keep email
+      password: '',
+      name: '',
+      confirmPassword: ''
+    });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleModalOpenChange}>
       <DialogContent className="glass-effect border-cosmic-500/20 max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
@@ -186,7 +286,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           {isSignUp && (
             <div>
               <Label htmlFor="name" className="text-sm font-medium">
-                Full Name
+                Full Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
@@ -195,14 +295,14 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
                 placeholder="Enter your full name"
-                required={isSignUp}
+                disabled={loading}
               />
             </div>
           )}
 
           <div>
             <Label htmlFor="email" className="text-sm font-medium">
-              Email Address
+              Email Address <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
@@ -211,46 +311,69 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
               onChange={(e) => handleInputChange('email', e.target.value)}
               className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
               placeholder="Enter your email"
-              required
+              disabled={loading}
+              autoComplete="email"
             />
           </div>
 
           <div>
             <Label htmlFor="password" className="text-sm font-medium">
-              Password
+              Password <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
-              placeholder="Enter your password"
-              required
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                className="glass-effect border-cosmic-500/30 focus:border-cosmic-500 pr-10"
+                placeholder="Enter your password"
+                disabled={loading}
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                disabled={loading}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {isSignUp && (
             <div>
               <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm Password
+                Confirm Password <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
-                placeholder="Confirm your password"
-                required={isSignUp}
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  className="glass-effect border-cosmic-500/30 focus:border-cosmic-500 pr-10"
+                  placeholder="Confirm your password"
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  disabled={loading}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
           )}
 
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-cosmic-600 hover:bg-cosmic-700 text-white py-3 rounded-xl animate-pulse-glow"
+            className="w-full bg-cosmic-600 hover:bg-cosmic-700 text-white py-3 rounded-xl animate-pulse-glow disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
           </Button>
@@ -258,8 +381,9 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           <div className="text-center">
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={toggleAuthMode}
               className="text-cosmic-400 hover:text-cosmic-300 text-sm transition-colors"
+              disabled={loading}
             >
               {isSignUp 
                 ? 'Already have an account? Sign in'
