@@ -1,9 +1,10 @@
-import { useState } from 'react';
+// AuthModal.tsx - Updated with better debugging and error handling
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { User, Star, Eye, EyeOff } from 'lucide-react';
+import { Star, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,6 +19,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,61 +28,60 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   });
   const { toast } = useToast();
 
+  // Add debug info
+  const addDebugInfo = (info: string) => {
+    console.log('[AUTH DEBUG]:', info);
+    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${info}`]);
+  };
+
+  // Reset form when modal opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        email: '',
+        password: '',
+        name: '',
+        confirmPassword: ''
+      });
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setDebugInfo([]);
+      setLoading(false);
+    }
+  }, [isOpen]);
+
   const validateForm = () => {
+    const errors: string[] = [];
+
     if (!formData.email.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Email address is required",
-        variant: "destructive"
-      });
-      return false;
+      errors.push("Email is required");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.push("Invalid email format");
     }
 
-    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      toast({
-        title: "Validation Error",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!formData.password.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Password is required",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (formData.password.length < 6) {
-      toast({
-        title: "Validation Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive"
-      });
-      return false;
+    if (!formData.password) {
+      errors.push("Password is required");
+    } else if (formData.password.length < 6) {
+      errors.push("Password must be at least 6 characters");
     }
 
     if (isSignUp) {
       if (!formData.name.trim()) {
-        toast({
-          title: "Validation Error",
-          description: "Full name is required for sign up",
-          variant: "destructive"
-        });
-        return false;
+        errors.push("Name is required for signup");
       }
-
       if (formData.password !== formData.confirmPassword) {
-        toast({
-          title: "Validation Error",
-          description: "Passwords do not match",
-          variant: "destructive"
-        });
-        return false;
+        errors.push("Passwords don't match");
       }
+    }
+
+    if (errors.length > 0) {
+      toast({
+        title: "Validation Error",
+        description: errors.join(", "),
+        variant: "destructive"
+      });
+      addDebugInfo(`Validation failed: ${errors.join(", ")}`);
+      return false;
     }
 
     return true;
@@ -89,18 +90,17 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
+    addDebugInfo(`Starting ${isSignUp ? 'signup' : 'signin'} process`);
 
     try {
       if (isSignUp) {
-        console.log('Attempting sign up with:', { email: formData.email, name: formData.name });
+        addDebugInfo(`Attempting signup for email: ${formData.email}`);
         
         const { data, error } = await supabase.auth.signUp({
-          email: formData.email.trim(),
+          email: formData.email.trim().toLowerCase(),
           password: formData.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
@@ -110,12 +110,14 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           }
         });
 
-        console.log('Sign up response:', { data, error });
+        addDebugInfo(`Signup response received`);
+        console.log('Signup data:', data);
+        console.log('Signup error:', error);
 
         if (error) {
-          console.error('Sign up error:', error);
+          addDebugInfo(`Signup error: ${error.message}`);
           toast({
-            title: "Sign Up Error",
+            title: "Sign Up Failed",
             description: error.message,
             variant: "destructive"
           });
@@ -123,10 +125,8 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         }
 
         if (data.user) {
-          // Check for stored career goal
-          const storedGoal = localStorage.getItem('career_goal');
+          addDebugInfo(`Signup successful for user: ${data.user.id}`);
           
-          // Create user data object
           const userData = {
             id: data.user.id,
             email: data.user.email,
@@ -137,54 +137,57 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             tokens: 100,
             joinDate: new Date().toISOString(),
             avatar: 'career-starter',
-            careerGoal: storedGoal || ''
+            careerGoal: localStorage.getItem('career_goal') || ''
           };
 
-          console.log('Created user data:', userData);
-
-          // Clear the stored goal
-          if (storedGoal) {
-            localStorage.removeItem('career_goal');
-          }
-
-          // Call onLogin callback
-          onLogin(userData);
+          // Clear stored career goal
+          localStorage.removeItem('career_goal');
           
-          // Close modal
+          addDebugInfo(`Calling onLogin with user data`);
+          onLogin(userData);
           onClose();
 
           toast({
-            title: "Success",
+            title: "Account Created!",
             description: data.user.email_confirmed_at 
-              ? "Account created successfully!" 
-              : "Account created! Please check your email to verify your account.",
+              ? "You can now start using AIShura!" 
+              : "Please check your email to verify your account.",
+          });
+        } else {
+          addDebugInfo(`Signup completed but no user data received`);
+          toast({
+            title: "Signup Issue",
+            description: "Account may have been created. Please try signing in.",
+            variant: "destructive"
           });
         }
+
       } else {
-        console.log('Attempting sign in with:', { email: formData.email });
+        // Sign In
+        addDebugInfo(`Attempting signin for email: ${formData.email}`);
         
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email.trim(),
+          email: formData.email.trim().toLowerCase(),
           password: formData.password
         });
 
-        console.log('Sign in response:', { data, error });
+        addDebugInfo(`Signin response received`);
+        console.log('Signin data:', data);
+        console.log('Signin error:', error);
 
         if (error) {
-          console.error('Sign in error:', error);
+          addDebugInfo(`Signin error: ${error.message}`);
           toast({
-            title: "Sign In Error",
+            title: "Sign In Failed",
             description: error.message,
             variant: "destructive"
           });
           return;
         }
 
-        if (data.user) {
-          // Check for stored career goal
-          const storedGoal = localStorage.getItem('career_goal');
+        if (data.user && data.session) {
+          addDebugInfo(`Signin successful for user: ${data.user.id}`);
           
-          // Create user data object
           const userData = {
             id: data.user.id,
             email: data.user.email,
@@ -195,33 +198,36 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             tokens: 100,
             joinDate: new Date().toISOString(),
             avatar: 'career-starter',
-            careerGoal: storedGoal || ''
+            careerGoal: localStorage.getItem('career_goal') || ''
           };
 
-          console.log('Created user data:', userData);
-
-          // Clear the stored goal
-          if (storedGoal) {
-            localStorage.removeItem('career_goal');
-          }
-
-          // Call onLogin callback
-          onLogin(userData);
+          // Clear stored career goal
+          localStorage.removeItem('career_goal');
           
-          // Close modal
+          addDebugInfo(`Calling onLogin with user data`);
+          onLogin(userData);
           onClose();
 
           toast({
-            title: "Success",
-            description: "Signed in successfully!",
+            title: "Welcome Back!",
+            description: "Successfully signed in to AIShura.",
+          });
+        } else {
+          addDebugInfo(`Signin completed but no user/session data received`);
+          toast({
+            title: "Sign In Issue",
+            description: "Authentication incomplete. Please try again.",
+            variant: "destructive"
           });
         }
       }
+
     } catch (error: any) {
-      console.error('Authentication error:', error);
+      addDebugInfo(`Unexpected error: ${error.message}`);
+      console.error('Auth error:', error);
       toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred",
+        title: "Authentication Error",
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -233,40 +239,42 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const resetForm = () => {
-    setFormData({
-      email: '',
+  const toggleAuthMode = () => {
+    setIsSignUp(!isSignUp);
+    setFormData(prev => ({
+      email: prev.email, // Keep email
       password: '',
       name: '',
       confirmPassword: ''
-    });
+    }));
     setShowPassword(false);
     setShowConfirmPassword(false);
+    addDebugInfo(`Switched to ${!isSignUp ? 'signup' : 'signin'} mode`);
   };
 
-  const handleModalOpenChange = (open: boolean) => {
-    if (!open) {
-      resetForm();
+  // Prevent modal from opening unintentionally
+  const handleOpenChange = (open: boolean) => {
+    addDebugInfo(`Modal open change requested: ${open}`);
+    if (!open && !loading) {
       onClose();
     }
   };
 
-  const toggleAuthMode = () => {
-    setIsSignUp(!isSignUp);
-    // Clear form when switching modes
-    setFormData({
-      email: formData.email, // Keep email
-      password: '',
-      name: '',
-      confirmPassword: ''
-    });
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-  };
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleModalOpenChange}>
-      <DialogContent className="glass-effect border-cosmic-500/20 max-w-md">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent 
+        className="glass-effect border-cosmic-500/20 max-w-md max-h-[90vh] overflow-y-auto"
+        onPointerDownOutside={(e) => {
+          if (loading) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (loading) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -278,7 +286,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             {isSignUp ? 'Join Your Career Journey' : 'Welcome Back'}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-400">
-            {isSignUp ? 'Create your account to start your AI-powered career transformation' : 'Sign in to continue your career journey with AIShura'}
+            {isSignUp ? 'Create your account to start your AI-powered career transformation' : 'Sign in to continue your career journey'}
           </DialogDescription>
         </DialogHeader>
 
@@ -296,6 +304,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                 className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
                 placeholder="Enter your full name"
                 disabled={loading}
+                autoComplete="name"
               />
             </div>
           )}
@@ -327,7 +336,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="glass-effect border-cosmic-500/30 focus:border-cosmic-500 pr-10"
-                placeholder="Enter your password"
+                placeholder="Enter your password (min 6 characters)"
                 disabled={loading}
                 autoComplete={isSignUp ? "new-password" : "current-password"}
               />
@@ -373,16 +382,23 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-cosmic-600 hover:bg-cosmic-700 text-white py-3 rounded-xl animate-pulse-glow disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-cosmic-600 hover:bg-cosmic-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 rounded-xl transition-all duration-200"
           >
-            {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Processing...
+              </div>
+            ) : (
+              isSignUp ? 'Create Account' : 'Sign In'
+            )}
           </Button>
 
           <div className="text-center">
             <button
               type="button"
               onClick={toggleAuthMode}
-              className="text-cosmic-400 hover:text-cosmic-300 text-sm transition-colors"
+              className="text-cosmic-400 hover:text-cosmic-300 text-sm transition-colors disabled:opacity-50"
               disabled={loading}
             >
               {isSignUp 
@@ -392,6 +408,21 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             </button>
           </div>
         </form>
+
+        {/* Debug Info - Remove in production */}
+        {debugInfo.length > 0 && (
+          <div className="mt-4 p-3 bg-gray-800/50 rounded-lg">
+            <div className="flex items-center gap-2 text-yellow-400 text-sm mb-2">
+              <AlertCircle className="w-4 h-4" />
+              Debug Info:
+            </div>
+            <div className="text-xs text-gray-300 space-y-1 max-h-20 overflow-y-auto">
+              {debugInfo.map((info, index) => (
+                <div key={index}>{info}</div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isSignUp && (
           <div className="text-center text-xs text-muted-foreground mt-4">
