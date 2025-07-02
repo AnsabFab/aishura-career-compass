@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Hero } from '@/components/Hero';
 import { Dashboard } from '@/components/Dashboard';
@@ -277,7 +278,6 @@ const Index = () => {
         onAuthClick={handleAuthClick}
         isAuthenticated={isAuthenticated}
         onLogout={handleLogout}
-        user={user}
       />
 
       {/* Floating Orbs Background - only show when not authenticated */}
