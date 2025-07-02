@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
@@ -44,7 +45,8 @@ const DialogContent = React.forwardRef<
         left: '50%',
         top: '50%',
         transform: 'translate(-50%, -50%)',
-        zIndex: 9999
+        zIndex: 9999,
+        margin: 0
       }}
       {...props}
     >
