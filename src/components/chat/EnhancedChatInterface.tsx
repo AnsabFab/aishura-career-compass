@@ -1,11 +1,10 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatMessage } from './ChatMessage';
 import { OnboardingFlow } from './OnboardingFlow';
-import { AIBackground } from './AIBackground';
+import { MetaHumanBackground } from './MetaHumanBackground';
 import { supabase } from '@/integrations/supabase/client';
 import { Send } from 'lucide-react';
 
@@ -50,6 +49,8 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
   const [isTyping, setIsTyping] = useState(false);
   const [hesitationTimer, setHesitationTimer] = useState<NodeJS.Timeout | null>(null);
   const [deletionCount, setDeletionCount] = useState(0);
+  const [pauseCount, setPauseCount] = useState(0);
+  const [lastTypingTime, setLastTypingTime] = useState<number>(Date.now());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeSession = sessions.find(s => s.id === activeSessionId);
@@ -58,13 +59,14 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages]);
 
+  // Enhanced hesitation detection
   useEffect(() => {
-    if (inputValue.length > 5) {
+    if (inputValue.length > 3) {
       if (hesitationTimer) clearTimeout(hesitationTimer);
       
       const timer = setTimeout(() => {
         showHesitationNudge();
-      }, 3800);
+      }, 2500); // Reduced from 3800ms
       
       setHesitationTimer(timer);
     }
@@ -74,13 +76,27 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
     };
   }, [inputValue]);
 
+  // Detect typing pauses for hesitation
+  useEffect(() => {
+    const now = Date.now();
+    if (now - lastTypingTime > 1500 && inputValue.length > 5) {
+      setPauseCount(prev => prev + 1);
+      if (pauseCount > 1) {
+        showHesitationNudge();
+        setPauseCount(0);
+      }
+    }
+  }, [inputValue, lastTypingTime, pauseCount]);
+
   const showHesitationNudge = () => {
     if (!activeSession) return;
     
     const nudges = [
-      "I can sense you're taking a thoughtful moment - that's wonderful. Sometimes the most important thoughts need time to form. Take all the space you need, I'm here with you.",
-      "I notice you're being really intentional with your words, and I appreciate that care. There's no rush at all - authentic conversations unfold naturally.",
-      "It feels like you might be processing something important right now. That pause shows how much this matters to you. I'm here whenever you're ready to share."
+      "I can sense you're taking a thoughtful moment - that's wonderful. Sometimes the most important thoughts need time to form. Take all the space you need, I'm here with you. 💭",
+      "I notice you're being really intentional with your words, and I appreciate that care. There's no rush at all - authentic conversations unfold naturally. 🌟",
+      "It feels like you might be processing something important right now. That pause shows how much this matters to you. I'm here whenever you're ready to share. 💜",
+      "I can feel the weight of what you're considering sharing. Those moments of hesitation often hold the most meaningful insights. I'm listening with full presence. 🤗",
+      "Your thoughtful pause tells me this conversation matters deeply to you. That's beautiful - take all the time you need to find your words. I'm right here. ✨"
     ];
     
     const randomNudge = nudges[Math.floor(Math.random() * nudges.length)];
@@ -99,11 +115,13 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
   const handleInputChange = (value: string) => {
     const previousLength = inputValue.length;
     const currentLength = value.length;
+    
+    setLastTypingTime(Date.now());
 
     if (currentLength < previousLength && previousLength > 3) {
       setDeletionCount(prev => prev + 1);
       
-      if (deletionCount > 2) {
+      if (deletionCount > 3) { // Increased threshold
         showHesitationNudge();
         setDeletionCount(0);
       }
@@ -166,32 +184,32 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
     const { name, location, industry, emotionalState } = persona;
     
     if (emotionalState.includes('Anxious')) {
-      return `Hello ${name}! I deeply understand the career uncertainty you're navigating in ${location} - those feelings around ${industry} are completely valid and show how much your future matters to you. I'm here to transform that anxiety into confident, strategic action.
+      return `Hello beautiful ${name}! 🌟 I deeply understand the career uncertainty you're navigating in ${location} - those feelings around ${industry} are completely valid and show how much your future matters to you. I'm here to transform that anxiety into confident, strategic action.
 
-Your emotional awareness is actually a strength that will serve you well in ${industry}. Let's channel this energy into meaningful progress that aligns with your authentic goals.
+Your emotional awareness is actually a superpower that will serve you incredibly well in ${industry}. Let's channel this energy into meaningful progress that aligns with your authentic goals.
 
-⚡ Time to Act Now:
-• Build confidence in ${industry} with targeted skill development on https://www.coursera.org/browse/${industry.toLowerCase().replace(/\s+/g, '-')}
+⚡ **Time to Act Now:**
+• Build unshakeable confidence in ${industry} with targeted skill development: https://www.coursera.org/browse/${industry.toLowerCase().replace(/\s+/g, '-')}
 
-What specific aspect of your ${industry} journey feels most overwhelming right now?`;
+What specific aspect of your ${industry} journey feels most overwhelming right now? I'm here to walk through it with you, step by step. 💪✨`;
     } else if (emotionalState.includes('Excited')) {
-      return `Hello brilliant ${name}! Your excitement about ${industry} is absolutely infectious and the perfect foundation for extraordinary career momentum in ${location}. I'm here to help you strategically channel this beautiful energy.
+      return `Hello brilliant ${name}! 🚀 Your excitement about ${industry} is absolutely infectious and the perfect foundation for extraordinary career momentum in ${location}. I'm here to help you strategically channel this beautiful energy.
 
 Your enthusiasm combined with smart strategy will create incredible opportunities in ${industry}. Let's turn this excitement into concrete, actionable steps that accelerate your success.
 
-⚡ Time to Act Now:
-• Leverage your momentum in ${industry} by exploring cutting-edge opportunities on https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}
+⚡ **Time to Act Now:**
+• Leverage your momentum in ${industry} by exploring cutting-edge opportunities: https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}
 
-What ${industry} opportunity would make your heart race with even more excitement?`;
+What ${industry} opportunity would make your heart race with even more excitement? Let's make it happen! 🔥💫`;
     } else {
-      return `Welcome to your personalized career transformation, ${name}! I'm AIShura, and I'm genuinely honored to guide your professional journey in ${industry} here in ${location}. Let's create something extraordinary together.
+      return `Welcome to your personalized career transformation, ${name}! 🌟 I'm AIShura, and I'm genuinely honored to guide your professional journey in ${industry} here in ${location}. Let's create something extraordinary together.
 
 Your unique blend of skills and aspirations in ${industry} has incredible potential. I'm here to provide precise, emotionally intelligent guidance that resonates with your authentic career vision.
 
-⚡ Time to Act Now:
-• Discover ${industry} opportunities tailored to your background on https://www.indeed.com/jobs?q=${encodeURIComponent(industry)}&l=${encodeURIComponent(location)}
+⚡ **Time to Act Now:**
+• Discover ${industry} opportunities tailored to your background: https://www.indeed.com/jobs?q=${encodeURIComponent(industry)}&l=${encodeURIComponent(location)}
 
-What's driving your passion for ${industry} right now?`;
+What's driving your passion for ${industry} right now? I'm excited to hear your story! 💼✨`;
     }
   };
 
@@ -230,6 +248,7 @@ What's driving your passion for ${industry} right now?`;
     setInputValue('');
     setIsTyping(true);
     setDeletionCount(0);
+    setPauseCount(0);
 
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
@@ -263,10 +282,10 @@ What's driving your passion for ${industry} right now?`;
         id: (Date.now() + 1).toString(),
         content: `I understand technical hiccups can be frustrating, but your career growth continues! Let's focus on actionable steps while I reconnect.
 
-⚡ Time to Act Now:
-• Continue building momentum on https://www.linkedin.com/jobs
+⚡ **Time to Act Now:**
+• Continue building momentum: https://www.linkedin.com/jobs
 
-What career goal excites you most right now?`,
+What career goal excites you most right now? 🚀✨`,
         sender: 'ai',
         timestamp: new Date()
       };
@@ -303,7 +322,7 @@ What career goal excites you most right now?`,
 
   return (
     <div className="h-full flex bg-transparent relative overflow-hidden">
-      <AIBackground />
+      <MetaHumanBackground />
       
       <ChatSidebar
         sessions={sessions}
@@ -372,7 +391,7 @@ What career goal excites you most right now?`,
           <div className="flex items-center justify-center mt-6">
             <p className="text-sm text-gray-400 flex items-center gap-3">
               <span className="w-3 h-3 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full animate-pulse"></span>
-              AIShura • Advanced Contextual Intelligence Active
+              AIShura • Advanced Emotional Intelligence Active
             </p>
           </div>
         </div>

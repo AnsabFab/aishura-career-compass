@@ -18,8 +18,8 @@ serve(async (req) => {
     // Enhanced contextual analysis
     const contextualAnalysis = analyzeUserIntent(message, userContext)
     
-    // Generate contextual response with working links
-    const response = generateContextualResponse(message, userContext, contextualAnalysis)
+    // Generate more human-like contextual response with working links
+    const response = generateHumanContextualResponse(message, userContext, contextualAnalysis)
     
     return new Response(
       JSON.stringify({ 
@@ -39,7 +39,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Failed to process request',
-        response: "I'm here to support your career journey. Let me help you navigate this challenge together. What specific aspect would you like to focus on?"
+        response: "I'm here to support your career journey with genuine care. Let me help you navigate this challenge together - what specific aspect would you like to focus on? 💜"
       }),
       { 
         status: 500, 
@@ -55,16 +55,16 @@ serve(async (req) => {
 function analyzeUserIntent(message: string, userContext: any) {
   const lowerMessage = message.toLowerCase()
   
-  // Enhanced intent detection
+  // Enhanced intent detection with emotional context
   const intents = {
-    interview: /interview|nervous|scared|anxious about interview|preparing for|fear|worried about meeting/i.test(message),
-    jobSearch: /job|position|role|hiring|apply|application|looking for work|unemployed|jobless/i.test(message),
-    skillDevelopment: /skill|learn|course|training|certification|improve|develop|study/i.test(message),
-    careerChange: /change|switch|transition|pivot|different field|new career|quit/i.test(message),
-    networking: /network|connect|people|mentor|relationship|linkedin|professional/i.test(message),
-    salary: /salary|pay|money|compensation|raise|negotiate|income/i.test(message),
-    stress: /stress|overwhelm|pressure|burnout|difficult|hard|struggle/i.test(message),
-    confidence: /confidence|imposter|doubt|believe|capable|worthy|insecure/i.test(message)
+    interview: /interview|nervous|scared|anxious about interview|preparing for|fear|worried about meeting|job interview/i.test(message),
+    jobSearch: /job|position|role|hiring|apply|application|looking for work|unemployed|jobless|career change/i.test(message),
+    skillDevelopment: /skill|learn|course|training|certification|improve|develop|study|upskill/i.test(message),
+    careerChange: /change|switch|transition|pivot|different field|new career|quit|career pivot/i.test(message),
+    networking: /network|connect|people|mentor|relationship|linkedin|professional network/i.test(message),
+    salary: /salary|pay|money|compensation|raise|negotiate|income|benefits/i.test(message),
+    stress: /stress|overwhelm|pressure|burnout|difficult|hard|struggle|frustrated/i.test(message),
+    confidence: /confidence|imposter|doubt|believe|capable|worthy|insecure|self-doubt/i.test(message)
   }
   
   // Determine primary intent
@@ -80,7 +80,7 @@ function analyzeUserIntent(message: string, userContext: any) {
     companies,
     roles,
     emotions,
-    urgency: /urgent|asap|quickly|immediately|soon|help/i.test(message) ? 'high' : 'normal'
+    urgency: /urgent|asap|quickly|immediately|soon|help|desperate/i.test(message) ? 'high' : 'normal'
   }
 }
 
@@ -105,17 +105,17 @@ function extractRoles(message: string, industry: string): string[] {
 
 function extractEmotions(message: string): string[] {
   const emotions = {
-    anxiety: /anxious|nervous|worried|scared|fear|panic|stress/i,
-    excitement: /excited|thrilled|eager|motivated|pumped/i,
-    frustration: /frustrated|annoyed|stuck|blocked|tired/i,
-    confidence: /confident|ready|prepared|strong|capable/i,
-    uncertainty: /unsure|confused|lost|overwhelmed|don't know/i
+    anxiety: /anxious|nervous|worried|scared|fear|panic|stress|overwhelmed/i,
+    excitement: /excited|thrilled|eager|motivated|pumped|passionate/i,
+    frustration: /frustrated|annoyed|stuck|blocked|tired|disappointed/i,
+    confidence: /confident|ready|prepared|strong|capable|determined/i,
+    uncertainty: /unsure|confused|lost|don't know|unclear|hesitant/i
   }
   
   return Object.keys(emotions).filter(emotion => emotions[emotion as keyof typeof emotions].test(message))
 }
 
-function generateContextualResponse(message: string, userContext: any, analysis: any) {
+function generateHumanContextualResponse(message: string, userContext: any, analysis: any) {
   const { name, location, industry, persona } = userContext
   const { primaryIntent, companies, emotions, urgency } = analysis
   
@@ -123,131 +123,167 @@ function generateContextualResponse(message: string, userContext: any, analysis:
   let actionLink = ""
   let actionText = ""
   
-  // Personalized greeting based on emotional state
-  const emotionalResponse = getEmotionalResponse(emotions, name)
+  // More empathetic and human-like emotional responses
+  const emotionalResponse = getHumanEmotionalResponse(emotions, name, urgency)
   
   switch (primaryIntent) {
     case 'interview':
       if (companies.length > 0) {
         const company = companies[0]
-        response = `${emotionalResponse} Preparing for ${company} is exciting! Here's how to approach your ${company} interview with confidence:
+        response = `${emotionalResponse} 
 
-🎯 **${company}-Specific Preparation:**
-• Research ${company}'s recent projects and values
-• Practice behavioral questions using the STAR method
-• Prepare technical questions relevant to ${company}'s tech stack
-• Review ${company}'s engineering blog and recent news
+Preparing for ${company}? That's incredible! 🌟 I can feel your determination, and honestly, that energy alone tells me you're going to do amazing things. Let me share something that might ease those interview butterflies...
 
-💪 **Confidence Building:**
-• Remember: They invited you because you're qualified
-• Practice mock interviews with peers
-• Prepare thoughtful questions about the role and team
-• Review your past achievements and how they align with ${company}'s needs
+**Here's the thing about ${company} interviews** - they invited you because they already see your potential. Now it's just about letting that authentic brilliance shine through.
 
-What specific aspect of the ${company} interview process concerns you most?`
+🎯 **Your ${company} Success Strategy:**
+• Research their latest projects and values (they love when candidates show genuine interest)
+• Practice the STAR method for behavioral questions - but make it YOUR story
+• Prepare 3-5 thoughtful questions that show you're thinking like someone who already works there
+• Review ${company}'s engineering blog - it shows you're invested in their vision
+
+💪 **Confidence Building Truth:**
+Remember, interviews aren't tests - they're conversations between future colleagues. You've got this! 
+
+What specific part of the ${company} interview process is making your heart race right now? Let's tackle it together! 🚀
+
+⚡ **Time to Act Now:**
+• Get insider interview insights and practice questions: https://www.glassdoor.com/Interview/${company}-Interview-Questions-E${getCompanyGlassdoorId(company)}.htm`
 
         actionLink = `https://www.glassdoor.com/Interview/${company}-Interview-Questions-E${getCompanyGlassdoorId(company)}.htm`
-        actionText = `View ${company} Interview Questions`
+        actionText = `Master ${company} Interviews`
       } else {
-        response = `${emotionalResponse} Interview preparation is key to success! Let me help you build confidence:
+        response = `${emotionalResponse}
 
-🎯 **Interview Preparation Strategy:**
-• Practice the STAR method for behavioral questions
-• Research the company's mission and recent developments
-• Prepare 3-5 thoughtful questions about the role
-• Practice technical concepts relevant to ${industry}
+Interview prep can feel overwhelming, but here's a secret - you're already more ready than you think! 💫 Every interview is just a conversation about your unique journey and how it aligns with their needs.
 
-💪 **Confidence Building:**
-• Mock interviews with friends or mentors
-• Record yourself answering common questions
-• Prepare examples of your best work and achievements
-• Remember: Interviews are conversations, not interrogations
+🎯 **Your Interview Confidence Blueprint:**
+• Master the STAR method, but make each story authentically YOURS
+• Research the company like you're already planning your first project there
+• Practice with friends or record yourself - hearing your own confidence builds more confidence
+• Prepare thoughtful questions that show you're thinking strategically about the role
 
-What type of interview are you preparing for (technical, behavioral, or both)?`
+💪 **Here's what I want you to remember:**
+They called YOU. Out of hundreds of applications, they saw something special. That's not luck - that's your value being recognized.
+
+What type of interview are you preparing for? Technical deep-dive or behavioral conversation? Let's create a game plan that feels right for YOU! ✨
+
+⚡ **Time to Act Now:**
+• Practice with real interview questions and build your confidence: https://www.glassdoor.com/Interview/interview-questions.htm`
 
         actionLink = `https://www.glassdoor.com/Interview/interview-questions.htm`
-        actionText = "Practice Interview Questions"
+        actionText = "Build Interview Confidence"
       }
       break
       
     case 'jobSearch':
-      response = `${emotionalResponse} Let's create a strategic job search plan for ${industry} in ${location}:
+      response = `${emotionalResponse}
 
-🎯 **Targeted Job Search Strategy:**
-• Focus on companies that align with your values and career goals
-• Optimize your LinkedIn profile with ${industry} keywords
-• Network with professionals in ${location}'s ${industry} scene
-• Apply to roles that match 70% of requirements (not 100%)
+Job searching in ${industry}? I see you, and I feel that mix of excitement and uncertainty. Here's what I know about you already - you're taking action, you're being intentional about your career, and that puts you ahead of most people. 🌟
 
-🚀 **Action Plan:**
-• Set up job alerts for ${industry} roles in ${location}
-• Reach out to 5 professionals weekly for informational interviews
-• Tailor your resume for each application
-• Follow up on applications after 1-2 weeks
+**Let's create a job search strategy that actually feels good:**
 
-What specific type of ${industry} role are you targeting?`
+🎯 **Your ${industry} Success Plan in ${location}:**
+• Focus on companies whose values align with YOUR values (this isn't just about getting ANY job)
+• Optimize your LinkedIn like you're the ${industry} professional you're becoming
+• Network authentically - reach out to 5 people weekly who inspire you in ${location}'s ${industry} scene
+• Apply to roles where you meet 70% of requirements (perfect matches are rare, growth is expected!)
+
+🚀 **Here's your weekly action rhythm:**
+• Monday: Set up targeted job alerts for ${industry} roles
+• Wednesday: Reach out to 2-3 professionals for genuine connections
+• Friday: Tailor applications for roles that excite you
+• Every other week: Follow up on applications (most people never do this!)
+
+What type of ${industry} role would make you excited to wake up on Monday mornings? Let's get specific about your dreams! 💫
+
+⚡ **Time to Act Now:**
+• Discover ${industry} opportunities crafted for your journey: https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}`
 
       actionLink = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}`
-      actionText = `Find ${industry} Jobs in ${location}`
+      actionText = `Find Your ${industry} Future`
       break
       
     case 'skillDevelopment':
-      response = `${emotionalResponse} Skill development is the best investment in your career! Here's your personalized learning path for ${industry}:
+      response = `${emotionalResponse}
 
-📚 **Learning Strategy:**
-• Identify the top 3 skills most demanded in ${industry}
-• Choose project-based learning over passive consumption
-• Join ${industry} communities and forums
-• Build a portfolio showcasing your new skills
+I love that you're thinking about skill development! 📚 That growth mindset? That's what separates the people who thrive from those who just survive. You're already showing the curiosity that leads to career breakthroughs.
 
-🎯 **Recommended Focus Areas:**
-• Technical skills specific to ${industry}
-• Soft skills like communication and problem-solving
-• Industry-specific tools and platforms
-• Leadership and collaboration skills
+**Here's how we're going to level up your ${industry} game:**
 
-What specific skill in ${industry} would make the biggest impact on your career?`
+🎯 **Your Strategic Learning Path:**
+• Identify the top 3 skills that would make you indispensable in ${industry}
+• Choose project-based learning (you learn by DOING, not just watching)
+• Join ${industry} communities where you can learn from others on the same journey
+• Build a portfolio that tells your growth story
+
+**The skills that matter most right now:**
+• Technical skills that solve real ${industry} problems
+• Communication skills that help you articulate your value
+• Industry-specific tools that boost your productivity
+• Leadership skills that prepare you for what's next
+
+What specific skill would be your career game-changer in ${industry}? Let's make a plan that gets you there faster than you think possible! 🚀
+
+⚡ **Time to Act Now:**
+• Start building tomorrow's career skills today: https://www.coursera.org/browse/${industry.toLowerCase().replace(/\s+/g, '-')}`
 
       actionLink = `https://www.coursera.org/browse/${industry.toLowerCase().replace(/\s+/g, '-')}`
-      actionText = `Explore ${industry} Courses`
+      actionText = `Master ${industry} Skills`
       break
       
     case 'stress':
-      response = `${emotionalResponse} I can feel the weight you're carrying, and I want you to know that these feelings are completely valid. Career stress is real, but you're not alone in this journey.
+      response = `${emotionalResponse}
 
-🌟 **Immediate Relief Strategies:**
-• Take 5 deep breaths right now
-• Write down 3 things you're grateful for in your career
-• Remember past challenges you've overcome successfully
-• Set one small, achievable goal for today
+First, take a deep breath with me. In... and out. 🌸 What you're feeling? It's not weakness - it's your body telling you that your career matters deeply to you. That care you feel? That's actually your superpower.
 
-💪 **Long-term Resilience:**
-• Create boundaries between work and personal time
-• Build a support network of colleagues and mentors
-• Practice stress management techniques daily
-• Focus on progress, not perfection
+**Let's ease this weight together:**
 
-What specific aspect of your career is causing the most stress right now?`
+🌟 **Right now, in this moment:**
+• Take 5 conscious breaths (I'm breathing with you)
+• Write down 3 things about your career journey you're genuinely proud of
+• Remember one challenge you've already overcome - you did it once, you can do it again
+• Set ONE small, achievable goal for today (just one)
+
+💪 **Building your resilience muscle:**
+• Create sacred boundaries between work stress and your personal peace
+• Build a circle of support - colleagues, mentors, friends who get it
+• Practice daily stress relief that actually works for YOU
+• Focus on progress, not perfection (perfection is a career killer)
+
+You know what I see when I look at your situation? Someone who cares deeply about doing meaningful work. That's rare and beautiful. 
+
+What specific part of your career is weighing heaviest on your heart right now? Let's lighten that load together. 💜
+
+⚡ **Time to Act Now:**
+• Learn evidence-based stress management techniques: https://www.headspace.com/work-life-balance`
 
       actionLink = "https://www.headspace.com/work-life-balance"
-      actionText = "Learn Stress Management"
+      actionText = "Find Your Career Peace"
       break
       
     default:
-      response = `${emotionalResponse} I'm here to support your ${industry} journey in ${location}. Whether you need guidance on career strategy, skill development, or navigating workplace challenges, I'm here to help.
+      response = `${emotionalResponse}
 
-🎯 **How I Can Help:**
-• Career strategy and planning
-• Interview preparation and confidence building
-• Skill development recommendations
-• Job search optimization
-• Networking strategies
-• Salary negotiation guidance
+I'm genuinely excited to be part of your ${industry} journey in ${location}! 🌟 Whether you're navigating career strategy, building confidence, developing skills, or dreaming about what's possible - I'm here to walk alongside you.
 
-What aspect of your ${industry} career would you like to focus on today?`
+**Here's what lights me up about supporting you:**
+• Creating career strategies that feel authentic to WHO you are
+• Building interview confidence that comes from genuine self-worth
+• Developing skills that open doors you didn't even know existed
+• Optimizing job searches that lead to roles you actually love
+• Building networks that become communities of mutual support
+• Navigating salary conversations with confidence and clarity
+
+Your ${industry} path is unique, and that's exactly what makes it powerful. 
+
+What aspect of your career adventure should we dive into first? I'm here for all of it! ✨
+
+⚡ **Time to Act Now:**
+• Connect with inspiring ${industry} professionals: https://www.linkedin.com/in/search/results/people/?keywords=${encodeURIComponent(industry)}&origin=GLOBAL_SEARCH_HEADER`
 
       actionLink = `https://www.linkedin.com/in/search/results/people/?keywords=${encodeURIComponent(industry)}&origin=GLOBAL_SEARCH_HEADER`
-      actionText = `Connect with ${industry} Professionals`
+      actionText = `Build Your ${industry} Network`
   }
   
   return {
@@ -257,17 +293,19 @@ What aspect of your ${industry} career would you like to focus on today?`
   }
 }
 
-function getEmotionalResponse(emotions: string[], name: string): string {
+function getHumanEmotionalResponse(emotions: string[], name: string, urgency: string): string {
+  const urgentPrefix = urgency === 'high' ? "I can feel the urgency in your message, and I want you to know - " : "";
+  
   if (emotions.includes('anxiety')) {
-    return `Hello ${name}! I can sense the nervous energy you're feeling, and I want you to know that those butterflies in your stomach are actually a sign that this opportunity matters to you.`
+    return `${urgentPrefix}Hello beautiful ${name}! 💜 I can sense those nervous butterflies in your stomach, and honestly? They tell me something incredible about you - this opportunity matters deeply to your heart. That anxiety you're feeling isn't a flaw, it's proof that you care about building something meaningful.`;
   } else if (emotions.includes('excitement')) {
-    return `Hello ${name}! Your excitement is absolutely contagious and tells me you're ready to take on new challenges!`
+    return `${urgentPrefix}Hello amazing ${name}! 🚀 Your excitement is literally radiating through the screen and it's contagious! That energy you're carrying? It's the exact fuel that transforms dreams into reality. I'm so here for this journey with you!`;
   } else if (emotions.includes('frustration')) {
-    return `Hello ${name}! I can feel your frustration, and I completely understand - sometimes the career path feels like it's moving slower than we'd like.`
+    return `${urgentPrefix}Hello strong ${name}! 🌟 I can feel that frustration, and you know what? It makes complete sense. Sometimes the career path moves slower than our hearts want it to. But here's what I see - someone who refuses to settle, someone who keeps pushing forward even when it's hard.`;
   } else if (emotions.includes('uncertainty')) {
-    return `Hello ${name}! Uncertainty can feel overwhelming, but it's also the space where growth happens.`
+    return `${urgentPrefix}Hello thoughtful ${name}! ✨ That uncertainty you're feeling? It's not confusion - it's your inner wisdom taking time to process all the possibilities ahead of you. Uncertainty often lives right next door to breakthrough moments.`;
   } else {
-    return `Hello ${name}! I'm here to support you on this career journey.`
+    return `${urgentPrefix}Hello incredible ${name}! 🌟 I'm genuinely honored to be part of your career story. There's something special about this moment - you're here, you're taking action, you're investing in your future. That alone tells me you're destined for something beautiful.`;
   }
 }
 
