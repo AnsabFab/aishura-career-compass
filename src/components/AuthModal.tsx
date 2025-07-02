@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Star, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Star, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -27,7 +27,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   });
   const { toast } = useToast();
 
-  // Reset form when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setFormData({
@@ -121,7 +120,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             careerGoal: localStorage.getItem('career_goal') || ''
           };
 
-          // Clear stored career goal
           localStorage.removeItem('career_goal');
           
           onLogin(userData);
@@ -136,7 +134,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         }
 
       } else {
-        // Sign In
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email.trim().toLowerCase(),
           password: formData.password
@@ -165,7 +162,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             careerGoal: localStorage.getItem('career_goal') || ''
           };
 
-          // Clear stored career goal
           localStorage.removeItem('career_goal');
           
           onLogin(userData);
@@ -197,7 +193,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   const toggleAuthMode = () => {
     setIsSignUp(!isSignUp);
     setFormData(prev => ({
-      email: prev.email, // Keep email
+      email: prev.email,
       password: '',
       name: '',
       confirmPassword: ''
@@ -208,34 +204,38 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !loading && !open && onClose()}>
-      <DialogContent className="glass-effect border-cosmic-500/20 max-w-md">
+      <DialogContent className="bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-cyan-900/95 backdrop-blur-xl border-2 border-white/20 max-w-md shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-cosmic-500/20 rounded-lg flex items-center justify-center">
-                <Star className="w-5 h-5 text-cosmic-400" />
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl">
+                <Star className="w-6 h-6 text-white" />
               </div>
-              <span className="font-orbitron text-2xl text-gradient">AIShura</span>
+              <span className="font-orbitron text-3xl bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                AIShura
+              </span>
             </div>
-            {isSignUp ? 'Begin Your Career Transformation' : 'Welcome Back, Future Leader'}
+            <span className="text-white text-xl">
+              {isSignUp ? 'Begin Your Career Transformation' : 'Welcome Back, Future Leader'}
+            </span>
           </DialogTitle>
-          <DialogDescription className="text-center text-gray-400">
+          <DialogDescription className="text-center text-gray-300">
             {isSignUp ? 'Create your account to unlock AI-powered career insights' : 'Sign in to continue your journey to career excellence'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {isSignUp && (
             <div>
-              <Label htmlFor="name" className="text-sm font-medium">
-                Full Name <span className="text-red-500">*</span>
+              <Label htmlFor="name" className="text-sm font-medium text-white">
+                Full Name <span className="text-red-400">*</span>
               </Label>
               <Input
                 id="name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
+                className="bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-purple-400 text-white placeholder:text-gray-400 rounded-xl h-12 mt-2"
                 placeholder="Enter your full name"
                 disabled={loading}
                 autoComplete="name"
@@ -244,15 +244,15 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           )}
 
           <div>
-            <Label htmlFor="email" className="text-sm font-medium">
-              Email Address <span className="text-red-500">*</span>
+            <Label htmlFor="email" className="text-sm font-medium text-white">
+              Email Address <span className="text-red-400">*</span>
             </Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
-              className="glass-effect border-cosmic-500/30 focus:border-cosmic-500"
+              className="bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-purple-400 text-white placeholder:text-gray-400 rounded-xl h-12 mt-2"
               placeholder="Enter your email"
               disabled={loading}
               autoComplete="email"
@@ -260,16 +260,16 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           </div>
 
           <div>
-            <Label htmlFor="password" className="text-sm font-medium">
-              Password <span className="text-red-500">*</span>
+            <Label htmlFor="password" className="text-sm font-medium text-white">
+              Password <span className="text-red-400">*</span>
             </Label>
-            <div className="relative">
+            <div className="relative mt-2">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
-                className="glass-effect border-cosmic-500/30 focus:border-cosmic-500 pr-10"
+                className="bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-purple-400 text-white placeholder:text-gray-400 rounded-xl h-12 pr-12"
                 placeholder="Enter your password (min 6 characters)"
                 disabled={loading}
                 autoComplete={isSignUp ? "new-password" : "current-password"}
@@ -277,26 +277,26 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
                 disabled={loading}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
           {isSignUp && (
             <div>
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm Password <span className="text-red-500">*</span>
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-white">
+                Confirm Password <span className="text-red-400">*</span>
               </Label>
-              <div className="relative">
+              <div className="relative mt-2">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className="glass-effect border-cosmic-500/30 focus:border-cosmic-500 pr-10"
+                  className="bg-white/10 backdrop-blur-xl border-2 border-white/20 focus:border-purple-400 text-white placeholder:text-gray-400 rounded-xl h-12 pr-12"
                   placeholder="Confirm your password"
                   disabled={loading}
                   autoComplete="new-password"
@@ -304,10 +304,10 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
                   disabled={loading}
                 >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -316,11 +316,11 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-cosmic-600 hover:bg-cosmic-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 rounded-xl transition-all duration-200"
+            className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-700 hover:to-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-4 rounded-xl transition-all duration-200 text-lg font-semibold shadow-2xl"
           >
             {loading ? (
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 {isSignUp ? 'Creating Your Future...' : 'Welcoming You Back...'}
               </div>
             ) : (
@@ -332,7 +332,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             <button
               type="button"
               onClick={toggleAuthMode}
-              className="text-cosmic-400 hover:text-cosmic-300 text-sm transition-colors disabled:opacity-50"
+              className="text-purple-300 hover:text-purple-200 text-sm transition-colors disabled:opacity-50"
               disabled={loading}
             >
               {isSignUp 
@@ -344,7 +344,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         </form>
 
         {isSignUp && (
-          <div className="text-center text-xs text-muted-foreground mt-4">
+          <div className="text-center text-xs text-gray-400 mt-4">
             By joining AIShura, you're agreeing to transform your career with AI-powered intelligence
           </div>
         )}

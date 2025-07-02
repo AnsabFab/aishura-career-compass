@@ -15,11 +15,9 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Refs to prevent unnecessary re-renders and modal popups
   const authStateInitialized = useRef(false);
   const preventModalPopup = useRef(false);
 
-  // Helper function to create user data object
   const createUserData = useCallback((supabaseUser: User, storedGoal?: string | null) => {
     return {
       id: supabaseUser.id,
@@ -35,21 +33,15 @@ const Index = () => {
     };
   }, []);
 
-  // Helper function to handle user authentication
   const handleUserAuthentication = useCallback((supabaseUser: User | null, source: string = 'unknown') => {
     if (supabaseUser) {
-      // Check for stored career goal
       const storedGoal = localStorage.getItem('career_goal');
-      
       const userData = createUserData(supabaseUser, storedGoal);
       
       setUser(userData);
       setIsAuthenticated(true);
-      
-      // Store in localStorage as backup
       localStorage.setItem('aishura_user', JSON.stringify(userData));
       
-      // Clear stored goal
       if (storedGoal) {
         localStorage.removeItem('career_goal');
       }
@@ -60,17 +52,14 @@ const Index = () => {
     }
   }, [createUserData]);
 
-  // Initialize authentication
   useEffect(() => {
     let isMounted = true;
 
     const initializeAuth = async () => {
       try {
-        // Get current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          // Try localStorage fallback
           const storedUser = localStorage.getItem('aishura_user');
           if (storedUser && isMounted) {
             try {
@@ -104,18 +93,15 @@ const Index = () => {
     };
   }, [handleUserAuthentication]);
 
-  // Set up auth state listener (separate from initialization)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // Only process auth changes after initial setup
         if (!authStateInitialized.current) {
           return;
         }
         
         setSession(session);
         
-        // Handle different auth events
         switch (event) {
           case 'SIGNED_IN':
             handleUserAuthentication(session?.user || null, 'auth-event-signin');
@@ -136,12 +122,9 @@ const Index = () => {
     };
   }, [handleUserAuthentication]);
 
-  // Prevent modal from showing during window resize/minimize
   useEffect(() => {
     const handleResize = () => {
       preventModalPopup.current = true;
-      
-      // Reset the flag after a short delay
       setTimeout(() => {
         preventModalPopup.current = false;
       }, 1000);
@@ -150,7 +133,6 @@ const Index = () => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         preventModalPopup.current = true;
-        
         setTimeout(() => {
           preventModalPopup.current = false;
         }, 2000);
@@ -175,14 +157,12 @@ const Index = () => {
 
   const handleLogout = useCallback(async () => {
     try {
-      // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('Logout error:', error);
       }
       
-      // Always clear local state
       setUser(null);
       setIsAuthenticated(false);
       setSession(null);
@@ -191,7 +171,6 @@ const Index = () => {
       
     } catch (error: any) {
       console.error('Unexpected logout error:', error);
-      // Force clear state
       setUser(null);
       setIsAuthenticated(false);
       setSession(null);
@@ -203,7 +182,6 @@ const Index = () => {
     if (preventModalPopup.current) {
       return;
     }
-    
     setShowAuthModal(true);
   }, []);
 
@@ -217,7 +195,7 @@ const Index = () => {
         <div className="text-white text-xl font-orbitron">
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 border-2 border-cosmic-400 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
               Loading AIShura...
             </div>
           </div>
@@ -228,14 +206,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col w-full">
-      {/* Navigation */}
       <Navbar 
         onAuthClick={handleAuthClick}
         isAuthenticated={isAuthenticated}
         onLogout={handleLogout}
       />
 
-      {/* Floating Orbs Background - only show when not authenticated */}
       {!isAuthenticated && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="floating-orb w-64 h-64 top-20 left-10 opacity-30" style={{ animationDelay: '0s' }} />
@@ -252,7 +228,6 @@ const Index = () => {
         )}
       </main>
 
-      {/* Only show footer when not authenticated */}
       {!isAuthenticated && <Footer />}
 
       <AuthModal 
