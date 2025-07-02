@@ -416,19 +416,6 @@ What's the strongest emotion driving your career decisions right now?`;
             key={message.id}
             className={`flex items-start gap-5 ${message.sender === 'user' ? 'flex-row-reverse' : ''} animate-fade-in`}
           >
-            <Avatar className="w-12 h-12 border-2 border-cosmic-500/30">
-              <AvatarFallback className={message.sender === 'user' ? 'bg-neon-500/20 text-neon-300' : 'bg-cosmic-500/20 text-cosmic-300'}>
-                {message.sender === 'user' ? (
-                  <User className="w-6 h-6" />
-                ) : (
-                  <img 
-                    src="/lovable-uploads/a181e3a8-6975-4e35-9a9a-3a612cb5a3b9.png" 
-                    alt="AIShura" 
-                    className="w-6 h-6 object-contain"
-                  />
-                )}
-              </AvatarFallback>
-            </Avatar>
             
             <div className={`max-w-[85%] ${message.sender === 'user' ? 'text-right' : ''}`}>
               <div
