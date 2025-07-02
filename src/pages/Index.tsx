@@ -14,17 +14,10 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   
   // Refs to prevent unnecessary re-renders and modal popups
   const authStateInitialized = useRef(false);
   const preventModalPopup = useRef(false);
-
-  // Add debug info
-  const addDebugInfo = useCallback((info: string) => {
-    console.log('[INDEX DEBUG]:', info);
-    setDebugInfo(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${info}`]);
-  }, []);
 
   // Helper function to create user data object
   const createUserData = useCallback((supabaseUser: User, storedGoal?: string | null) => {
@@ -44,11 +37,7 @@ const Index = () => {
 
   // Helper function to handle user authentication
   const handleUserAuthentication = useCallback((supabaseUser: User | null, source: string = 'unknown') => {
-    addDebugInfo(`handleUserAuthentication called from: ${source}`);
-    
     if (supabaseUser) {
-      addDebugInfo(`User authenticated: ${supabaseUser.email}`);
-      
       // Check for stored career goal
       const storedGoal = localStorage.getItem('career_goal');
       
@@ -63,20 +52,17 @@ const Index = () => {
       // Clear stored goal
       if (storedGoal) {
         localStorage.removeItem('career_goal');
-        addDebugInfo('Cleared stored career goal');
       }
     } else {
-      addDebugInfo('User not authenticated - clearing state');
       setUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('aishura_user');
     }
-  }, [createUserData, addDebugInfo]);
+  }, [createUserData]);
 
   // Initialize authentication
   useEffect(() => {
     let isMounted = true;
-    addDebugInfo('Starting auth initialization');
 
     const initializeAuth = async () => {
       try {
@@ -84,17 +70,14 @@ const Index = () => {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          addDebugInfo(`Session error: ${error.message}`);
           // Try localStorage fallback
           const storedUser = localStorage.getItem('aishura_user');
           if (storedUser && isMounted) {
             try {
               const userData = JSON.parse(storedUser);
-              addDebugInfo('Using localStorage fallback');
               setUser(userData);
               setIsAuthenticated(true);
             } catch (e) {
-              addDebugInfo('Invalid localStorage data - clearing');
               localStorage.removeItem('aishura_user');
             }
           }
@@ -105,12 +88,11 @@ const Index = () => {
           }
         }
       } catch (error: any) {
-        addDebugInfo(`Auth initialization error: ${error.message}`);
+        console.error('Auth initialization error:', error);
       } finally {
         if (isMounted) {
           authStateInitialized.current = true;
           setLoading(false);
-          addDebugInfo('Auth initialization completed');
         }
       }
     };
@@ -120,21 +102,16 @@ const Index = () => {
     return () => {
       isMounted = false;
     };
-  }, [handleUserAuthentication, addDebugInfo]);
+  }, [handleUserAuthentication]);
 
   // Set up auth state listener (separate from initialization)
   useEffect(() => {
-    addDebugInfo('Setting up auth state listener');
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         // Only process auth changes after initial setup
         if (!authStateInitialized.current) {
-          addDebugInfo(`Ignoring auth event during initialization: ${event}`);
           return;
         }
-
-        addDebugInfo(`Auth state changed: ${event} - User: ${session?.user?.email || 'none'}`);
         
         setSession(session);
         
@@ -147,25 +124,22 @@ const Index = () => {
             handleUserAuthentication(null, 'auth-event-signout');
             break;
           case 'TOKEN_REFRESHED':
-            addDebugInfo('Token refreshed');
             break;
           default:
-            addDebugInfo(`Unhandled auth event: ${event}`);
+            break;
         }
       }
     );
 
     return () => {
-      addDebugInfo('Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, [handleUserAuthentication, addDebugInfo]);
+  }, [handleUserAuthentication]);
 
   // Prevent modal from showing during window resize/minimize
   useEffect(() => {
     const handleResize = () => {
       preventModalPopup.current = true;
-      addDebugInfo(`Window resized to: ${window.innerWidth}x${window.innerHeight}`);
       
       // Reset the flag after a short delay
       setTimeout(() => {
@@ -176,7 +150,6 @@ const Index = () => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         preventModalPopup.current = true;
-        addDebugInfo('Window hidden - preventing modal popup');
         
         setTimeout(() => {
           preventModalPopup.current = false;
@@ -191,25 +164,22 @@ const Index = () => {
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [addDebugInfo]);
+  }, []);
 
   const handleLogin = useCallback((userData: any) => {
-    addDebugInfo('Manual login triggered');
     setUser(userData);
     setIsAuthenticated(true);
     setShowAuthModal(false);
     localStorage.setItem('aishura_user', JSON.stringify(userData));
-  }, [addDebugInfo]);
+  }, []);
 
   const handleLogout = useCallback(async () => {
     try {
-      addDebugInfo('Logout initiated');
-      
       // Sign out from Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        addDebugInfo(`Logout error: ${error.message}`);
+        console.error('Logout error:', error);
       }
       
       // Always clear local state
@@ -219,31 +189,27 @@ const Index = () => {
       localStorage.removeItem('aishura_user');
       localStorage.removeItem('career_goal');
       
-      addDebugInfo('Logout completed');
     } catch (error: any) {
-      addDebugInfo(`Unexpected logout error: ${error.message}`);
+      console.error('Unexpected logout error:', error);
       // Force clear state
       setUser(null);
       setIsAuthenticated(false);
       setSession(null);
       localStorage.removeItem('aishura_user');
     }
-  }, [addDebugInfo]);
+  }, []);
 
   const handleAuthClick = useCallback(() => {
     if (preventModalPopup.current) {
-      addDebugInfo('Auth click prevented due to recent window event');
       return;
     }
     
-    addDebugInfo('Auth modal requested');
     setShowAuthModal(true);
-  }, [addDebugInfo]);
+  }, []);
 
   const handleCloseAuthModal = useCallback(() => {
-    addDebugInfo('Auth modal close requested');
     setShowAuthModal(false);
-  }, [addDebugInfo]);
+  }, []);
 
   if (loading) {
     return (
@@ -254,17 +220,6 @@ const Index = () => {
               <div className="w-8 h-8 border-2 border-cosmic-400 border-t-transparent rounded-full animate-spin"></div>
               Loading AIShura...
             </div>
-            {/* Debug info - remove in production */}
-            {debugInfo.length > 0 && (
-              <div className="text-xs text-gray-400 max-w-md">
-                <div className="text-center mb-2">Debug Info:</div>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
-                  {debugInfo.slice(-5).map((info, index) => (
-                    <div key={index}>{info}</div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -299,18 +254,6 @@ const Index = () => {
 
       {/* Only show footer when not authenticated */}
       {!isAuthenticated && <Footer />}
-
-      {/* Debug Panel - Remove in production */}
-      {debugInfo.length > 0 && !isAuthenticated && (
-        <div className="fixed bottom-4 right-4 bg-black/80 text-white p-3 rounded-lg text-xs max-w-xs">
-          <div className="text-yellow-400 mb-2">Debug Info:</div>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
-            {debugInfo.slice(-10).map((info, index) => (
-              <div key={index}>{info}</div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <AuthModal 
         isOpen={showAuthModal}

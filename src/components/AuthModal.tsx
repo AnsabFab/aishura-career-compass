@@ -1,4 +1,4 @@
-// AuthModal.tsx - Updated with better debugging and error handling
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -27,12 +26,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
     confirmPassword: ''
   });
   const { toast } = useToast();
-
-  // Add debug info
-  const addDebugInfo = (info: string) => {
-    console.log('[AUTH DEBUG]:', info);
-    setDebugInfo(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${info}`]);
-  };
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -45,7 +38,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
       });
       setShowPassword(false);
       setShowConfirmPassword(false);
-      setDebugInfo([]);
       setLoading(false);
     }
   }, [isOpen]);
@@ -80,7 +72,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         description: errors.join(", "),
         variant: "destructive"
       });
-      addDebugInfo(`Validation failed: ${errors.join(", ")}`);
       return false;
     }
 
@@ -93,12 +84,9 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
     if (!validateForm()) return;
 
     setLoading(true);
-    addDebugInfo(`Starting ${isSignUp ? 'signup' : 'signin'} process`);
 
     try {
       if (isSignUp) {
-        addDebugInfo(`Attempting signup for email: ${formData.email}`);
-        
         const { data, error } = await supabase.auth.signUp({
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -110,12 +98,7 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           }
         });
 
-        addDebugInfo(`Signup response received`);
-        console.log('Signup data:', data);
-        console.log('Signup error:', error);
-
         if (error) {
-          addDebugInfo(`Signup error: ${error.message}`);
           toast({
             title: "Sign Up Failed",
             description: error.message,
@@ -125,8 +108,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         }
 
         if (data.user) {
-          addDebugInfo(`Signup successful for user: ${data.user.id}`);
-          
           const userData = {
             id: data.user.id,
             email: data.user.email,
@@ -143,40 +124,25 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           // Clear stored career goal
           localStorage.removeItem('career_goal');
           
-          addDebugInfo(`Calling onLogin with user data`);
           onLogin(userData);
           onClose();
 
           toast({
-            title: "Account Created!",
+            title: "Welcome to AIShura! ✨",
             description: data.user.email_confirmed_at 
-              ? "You can now start using AIShura!" 
-              : "Please check your email to verify your account.",
-          });
-        } else {
-          addDebugInfo(`Signup completed but no user data received`);
-          toast({
-            title: "Signup Issue",
-            description: "Account may have been created. Please try signing in.",
-            variant: "destructive"
+              ? "Your career transformation journey begins now!" 
+              : "Please check your email to verify your account and unlock your full potential.",
           });
         }
 
       } else {
         // Sign In
-        addDebugInfo(`Attempting signin for email: ${formData.email}`);
-        
         const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email.trim().toLowerCase(),
           password: formData.password
         });
 
-        addDebugInfo(`Signin response received`);
-        console.log('Signin data:', data);
-        console.log('Signin error:', error);
-
         if (error) {
-          addDebugInfo(`Signin error: ${error.message}`);
           toast({
             title: "Sign In Failed",
             description: error.message,
@@ -186,8 +152,6 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
         }
 
         if (data.user && data.session) {
-          addDebugInfo(`Signin successful for user: ${data.user.id}`);
-          
           const userData = {
             id: data.user.id,
             email: data.user.email,
@@ -204,26 +168,17 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
           // Clear stored career goal
           localStorage.removeItem('career_goal');
           
-          addDebugInfo(`Calling onLogin with user data`);
           onLogin(userData);
           onClose();
 
           toast({
-            title: "Welcome Back!",
-            description: "Successfully signed in to AIShura.",
-          });
-        } else {
-          addDebugInfo(`Signin completed but no user/session data received`);
-          toast({
-            title: "Sign In Issue",
-            description: "Authentication incomplete. Please try again.",
-            variant: "destructive"
+            title: "Welcome back! 🚀",
+            description: "Ready to continue your amazing career journey?",
           });
         }
       }
 
     } catch (error: any) {
-      addDebugInfo(`Unexpected error: ${error.message}`);
       console.error('Auth error:', error);
       toast({
         title: "Authentication Error",
@@ -249,32 +204,11 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
     }));
     setShowPassword(false);
     setShowConfirmPassword(false);
-    addDebugInfo(`Switched to ${!isSignUp ? 'signup' : 'signin'} mode`);
-  };
-
-  // Prevent modal from opening unintentionally
-  const handleOpenChange = (open: boolean) => {
-    addDebugInfo(`Modal open change requested: ${open}`);
-    if (!open && !loading) {
-      onClose();
-    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className="glass-effect border-cosmic-500/20 max-w-md max-h-[90vh] overflow-y-auto"
-        onPointerDownOutside={(e) => {
-          if (loading) {
-            e.preventDefault();
-          }
-        }}
-        onEscapeKeyDown={(e) => {
-          if (loading) {
-            e.preventDefault();
-          }
-        }}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !loading && !open && onClose()}>
+      <DialogContent className="glass-effect border-cosmic-500/20 max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -283,10 +217,10 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
               </div>
               <span className="font-orbitron text-2xl text-gradient">AIShura</span>
             </div>
-            {isSignUp ? 'Join Your Career Journey' : 'Welcome Back'}
+            {isSignUp ? 'Begin Your Career Transformation' : 'Welcome Back, Future Leader'}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-400">
-            {isSignUp ? 'Create your account to start your AI-powered career transformation' : 'Sign in to continue your career journey'}
+            {isSignUp ? 'Create your account to unlock AI-powered career insights' : 'Sign in to continue your journey to career excellence'}
           </DialogDescription>
         </DialogHeader>
 
@@ -387,10 +321,10 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Processing...
+                {isSignUp ? 'Creating Your Future...' : 'Welcoming You Back...'}
               </div>
             ) : (
-              isSignUp ? 'Create Account' : 'Sign In'
+              isSignUp ? '🚀 Start My Journey' : '✨ Welcome Me Back'
             )}
           </Button>
 
@@ -402,31 +336,16 @@ export const AuthModal = ({ isOpen, onClose, onLogin }: AuthModalProps) => {
               disabled={loading}
             >
               {isSignUp 
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up"
+                ? 'Already transforming careers? Sign in here'
+                : "Ready for your breakthrough? Create your account"
               }
             </button>
           </div>
         </form>
 
-        {/* Debug Info - Remove in production */}
-        {debugInfo.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-800/50 rounded-lg">
-            <div className="flex items-center gap-2 text-yellow-400 text-sm mb-2">
-              <AlertCircle className="w-4 h-4" />
-              Debug Info:
-            </div>
-            <div className="text-xs text-gray-300 space-y-1 max-h-20 overflow-y-auto">
-              {debugInfo.map((info, index) => (
-                <div key={index}>{info}</div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {isSignUp && (
           <div className="text-center text-xs text-muted-foreground mt-4">
-            By signing up, you agree to our Terms of Service and Privacy Policy
+            By joining AIShura, you're agreeing to transform your career with AI-powered intelligence
           </div>
         )}
       </DialogContent>
