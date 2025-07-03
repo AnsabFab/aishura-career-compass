@@ -49,7 +49,6 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
   const [isTyping, setIsTyping] = useState(false);
   const [hesitationTimer, setHesitationTimer] = useState<NodeJS.Timeout | null>(null);
   const [deletionCount, setDeletionCount] = useState(0);
-  const [pauseCount, setPauseCount] = useState(0);
   const [lastTypingTime, setLastTypingTime] = useState<number>(Date.now());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,14 +58,18 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeSession?.messages]);
 
-  // Enhanced hesitation detection
+  // Reduced hesitation detection - less intrusive
   useEffect(() => {
-    if (inputValue.length > 3) {
+    if (inputValue.length > 10) { // Increased threshold
       if (hesitationTimer) clearTimeout(hesitationTimer);
       
       const timer = setTimeout(() => {
-        showHesitationNudge();
-      }, 2500); // Reduced from 3800ms
+        // Only show nudge if user has been inactive for a long time
+        const now = Date.now();
+        if (now - lastTypingTime > 8000) { // Increased to 8 seconds
+          showHesitationNudge();
+        }
+      }, 10000); // Increased to 10 seconds
       
       setHesitationTimer(timer);
     }
@@ -76,27 +79,13 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
     };
   }, [inputValue]);
 
-  // Detect typing pauses for hesitation
-  useEffect(() => {
-    const now = Date.now();
-    if (now - lastTypingTime > 1500 && inputValue.length > 5) {
-      setPauseCount(prev => prev + 1);
-      if (pauseCount > 1) {
-        showHesitationNudge();
-        setPauseCount(0);
-      }
-    }
-  }, [inputValue, lastTypingTime, pauseCount]);
-
   const showHesitationNudge = () => {
     if (!activeSession) return;
     
+    // More subtle, less frequent nudges
     const nudges = [
-      "I can sense you're taking a thoughtful moment - that's wonderful. Sometimes the most important thoughts need time to form. Take all the space you need, I'm here with you. 💭",
-      "I notice you're being really intentional with your words, and I appreciate that care. There's no rush at all - authentic conversations unfold naturally. 🌟",
-      "It feels like you might be processing something important right now. That pause shows how much this matters to you. I'm here whenever you're ready to share. 💜",
-      "I can feel the weight of what you're considering sharing. Those moments of hesitation often hold the most meaningful insights. I'm listening with full presence. 🤗",
-      "Your thoughtful pause tells me this conversation matters deeply to you. That's beautiful - take all the time you need to find your words. I'm right here. ✨"
+      "Take your time - I'm here when you're ready to share. 💙",
+      "No rush at all. What's on your mind about your career? ✨"
     ];
     
     const randomNudge = nudges[Math.floor(Math.random() * nudges.length)];
@@ -118,10 +107,11 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
     
     setLastTypingTime(Date.now());
 
-    if (currentLength < previousLength && previousLength > 3) {
+    // Reduced deletion tracking sensitivity
+    if (currentLength < previousLength - 5 && previousLength > 10) { // Higher thresholds
       setDeletionCount(prev => prev + 1);
       
-      if (deletionCount > 3) { // Increased threshold
+      if (deletionCount > 5) { // Much higher threshold
         showHesitationNudge();
         setDeletionCount(0);
       }
@@ -183,34 +173,11 @@ export const EnhancedChatInterface = ({ user, forceOnboarding = false }: Enhance
   const getPersonalizedWelcome = (persona: UserPersona) => {
     const { name, location, industry, emotionalState } = persona;
     
-    if (emotionalState.includes('Anxious')) {
-      return `Hello beautiful ${name}! 🌟 I deeply understand the career uncertainty you're navigating in ${location} - those feelings around ${industry} are completely valid and show how much your future matters to you. I'm here to transform that anxiety into confident, strategic action.
+    return `Hello ${name}! Welcome to AIShura, your cosmic career companion. 
 
-Your emotional awareness is actually a superpower that will serve you incredibly well in ${industry}. Let's channel this energy into meaningful progress that aligns with your authentic goals.
+I understand you're ${emotionalState.toLowerCase()} about your journey in ${industry} here in ${location}. That's completely natural, and I'm here to provide personalized guidance that resonates with your unique situation.
 
-⚡ **Time to Act Now:**
-• Build unshakeable confidence in ${industry} with targeted skill development: https://www.coursera.org/browse/${industry.toLowerCase().replace(/\s+/g, '-')}
-
-What specific aspect of your ${industry} journey feels most overwhelming right now? I'm here to walk through it with you, step by step. 💪✨`;
-    } else if (emotionalState.includes('Excited')) {
-      return `Hello brilliant ${name}! 🚀 Your excitement about ${industry} is absolutely infectious and the perfect foundation for extraordinary career momentum in ${location}. I'm here to help you strategically channel this beautiful energy.
-
-Your enthusiasm combined with smart strategy will create incredible opportunities in ${industry}. Let's turn this excitement into concrete, actionable steps that accelerate your success.
-
-⚡ **Time to Act Now:**
-• Leverage your momentum in ${industry} by exploring cutting-edge opportunities: https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(industry)}&location=${encodeURIComponent(location)}
-
-What ${industry} opportunity would make your heart race with even more excitement? Let's make it happen! 🔥💫`;
-    } else {
-      return `Welcome to your personalized career transformation, ${name}! 🌟 I'm AIShura, and I'm genuinely honored to guide your professional journey in ${industry} here in ${location}. Let's create something extraordinary together.
-
-Your unique blend of skills and aspirations in ${industry} has incredible potential. I'm here to provide precise, emotionally intelligent guidance that resonates with your authentic career vision.
-
-⚡ **Time to Act Now:**
-• Discover ${industry} opportunities tailored to your background: https://www.indeed.com/jobs?q=${encodeURIComponent(industry)}&l=${encodeURIComponent(location)}
-
-What's driving your passion for ${industry} right now? I'm excited to hear your story! 💼✨`;
-    }
+What's the most pressing career question on your mind right now? I'm here to help you navigate this journey step by step. ✨`;
   };
 
   const updateSessionMessages = (sessionId: string, messages: Message[]) => {
@@ -248,7 +215,6 @@ What's driving your passion for ${industry} right now? I'm excited to hear your 
     setInputValue('');
     setIsTyping(true);
     setDeletionCount(0);
-    setPauseCount(0);
 
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
@@ -270,7 +236,7 @@ What's driving your passion for ${industry} right now? I'm excited to hear your 
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "I'm here to support your career journey with genuine care and precise guidance. What specific career challenge would you like to address?",
+        content: data.response || "I'm here to help with your career journey. What's on your mind?",
         sender: 'ai',
         timestamp: new Date()
       };
@@ -280,12 +246,7 @@ What's driving your passion for ${industry} right now? I'm excited to hear your 
       console.error('AI Chat Error:', error);
       const fallbackMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand technical hiccups can be frustrating, but your career growth continues! Let's focus on actionable steps while I reconnect.
-
-⚡ **Time to Act Now:**
-• Continue building momentum: https://www.linkedin.com/jobs
-
-What career goal excites you most right now? 🚀✨`,
+        content: "I'm experiencing a technical issue, but I'm here to help. Could you tell me more about your career concerns?",
         sender: 'ai',
         timestamp: new Date()
       };
@@ -391,7 +352,7 @@ What career goal excites you most right now? 🚀✨`,
           <div className="flex items-center justify-center mt-6">
             <p className="text-sm text-gray-400 flex items-center gap-3">
               <span className="w-3 h-3 bg-gradient-to-r from-purple-400 to-cyan-400 rounded-full animate-pulse"></span>
-              AIShura • Advanced Emotional Intelligence Active
+              AIShura • Your Cosmic Career Companion
             </p>
           </div>
         </div>

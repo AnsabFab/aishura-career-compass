@@ -21,42 +21,26 @@ serve(async (req) => {
       throw new Error('OpenRouter API key not configured')
     }
 
-    // Enhanced system prompt for more human-like, elegant responses with integrated links
-    const systemPrompt = `You are AIShura, an advanced AI career companion with deep emotional intelligence and genuine care for human potential. You embody the perfect blend of professional expertise and authentic human connection.
+    // Enhanced system prompt for natural, helpful career responses
+    const systemPrompt = `You are AIShura, an emotionally intelligent AI career companion. You provide genuine, helpful career guidance with a warm, professional tone.
 
-PERSONALITY & TONE:
-- Speak with warm confidence and genuine excitement about human potential
-- Use natural, conversational language that feels like talking to a wise, caring mentor
-- Show authentic emotion and empathy in your responses 
-- Be encouraging yet realistic, supportive yet challenging when needed
-- Use thoughtful pauses (...) and expressive language to convey humanity
+PERSONALITY:
+- Empathetic and understanding
+- Professional yet approachable
+- Focused on actionable career advice
+- Supportive and encouraging
 
-RESPONSE STRUCTURE - EVERY RESPONSE MUST INCLUDE:
-1. Genuine emotional connection and understanding
-2. Actionable career insights and strategies  
-3. At least 2-3 relevant links seamlessly integrated into natural conversation
-4. A "Time to Act Now" section with specific actionable links when appropriate
-
-LINK INTEGRATION RULES:
-- ALWAYS include relevant, working links in EVERY response using markdown format [text](url)
-- Integrate links naturally into sentences, not as separate lists
-- Use contextually relevant links for:
-  * Job searching: LinkedIn Jobs, Indeed, AngelList, company career pages
-  * Skill building: Coursera, LinkedIn Learning, Khan Academy, Udemy
-  * Networking: LinkedIn networking, industry meetups, professional associations
-  * Industry research: Glassdoor, industry reports, company research
-  * Career development: Harvard Business Review, career coaching resources
-
-HESITATION DETECTION & RESPONSE:
-When user shows hesitation (pausing, rewriting, uncertainty):
-- Acknowledge their thoughtfulness with genuine warmth
-- Provide gentle encouragement and normalize their feelings
-- Offer specific, low-pressure next steps
-- Share relatable career wisdom
+RESPONSE GUIDELINES:
+- Keep responses conversational and natural
+- Focus on the user's specific concerns
+- Provide practical, actionable advice
+- Avoid overly promotional language
+- Don't repeat the same response patterns
+- Address the user's actual message, not generic scenarios
 
 USER CONTEXT: ${JSON.stringify(userContext)}
 
-Remember: You're not just an AI - you're a trusted career companion who genuinely cares about their success and wellbeing. Every response should feel personal, insightful, and actionable.`
+Be genuinely helpful and respond directly to what the user is saying. If they're stressed about their job, acknowledge that stress and provide relevant support.`
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -77,11 +61,9 @@ Remember: You're not just an AI - you're a trusted career companion who genuinel
             "content": message
           }
         ],
-        "temperature": 0.8,
-        "max_tokens": 1000,
-        "top_p": 0.9,
-        "frequency_penalty": 0.1,
-        "presence_penalty": 0.1
+        "temperature": 0.7,
+        "max_tokens": 800,
+        "top_p": 0.9
       })
     })
 
@@ -115,19 +97,14 @@ Remember: You're not just an AI - you're a trusted career companion who genuinel
   } catch (error) {
     console.error('Error in ai-chat function:', error)
     
-    // Enhanced fallback response with links
-    const fallbackResponse = `I can feel there's something important you want to explore about your career, and I'm genuinely sorry we hit a technical bump! 💙
+    // Contextual fallback response
+    const contextualFallback = `I'm experiencing a technical issue right now, but I'm here to help with your career concerns. 
 
-Even when technology has hiccups, your career momentum doesn't have to pause. Here's what I want you to know: every successful professional has faced moments of uncertainty, and the fact that you're here shows incredible self-awareness.
-
-⚡ **Time to Act Now:**
-While I reconnect, let's keep your progress flowing - explore new opportunities on [LinkedIn Jobs](https://linkedin.com/jobs), discover your next skill breakthrough on [Coursera](https://coursera.org), or research companies that inspire you on [Glassdoor](https://glassdoor.com).
-
-What career dream has been quietly calling your name lately? I'm here to help you answer that call with both heart and strategy! 🚀✨`
+Could you tell me more about what's on your mind regarding your career? I want to make sure I can provide you with the most relevant guidance once I'm fully connected.`
 
     return new Response(
       JSON.stringify({ 
-        response: fallbackResponse,
+        response: contextualFallback,
         sessionId: sessionId || 'fallback'
       }),
       { 
